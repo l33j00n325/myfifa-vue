@@ -1,12 +1,16 @@
+import { mapGetters } from 'vuex'
 import { addYears, differenceInYears, format, parseISO } from 'date-fns'
 
 export default {
   computed: {
+    ...mapGetters('teams', {
+      getTeam: 'get'
+    }),
     teamId () {
-      return parseInt(this.$route.params.teamId)
+      return this.$route.params.teamId
     },
     team () {
-      return this.$store.$db().model('Team').find(this.teamId)
+      return this.getTeam(this.teamId)
     },
     season () {
       const date = parseISO(this.team.startedOn)
@@ -27,12 +31,6 @@ export default {
       const start = addYears(parseISO(this.team.startedOn), season)
       const end = addYears(start, 1)
       return `${format(start, 'yyyy')} - ${format(end, 'yyyy')}`
-    },
-    linkTo (page) {
-      return {
-        name: `teams-teamId-${page}`,
-        params: { teamId: this.team.id }
-      }
     }
   }
 }

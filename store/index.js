@@ -1,3 +1,4 @@
+import Vue from 'vue'
 import VuexORM from '@vuex-orm/core'
 import Cookie from 'js-cookie'
 import * as models from '@/models'
@@ -8,13 +9,12 @@ import pkg from '@/package.json'
 export const state = () => ({
   version: pkg.version,
   token: null,
-  userId: null
+  currentUser: null
 })
 
 // getters
 export const getters = {
-  authenticated: state => state.token !== null,
-  currentUser: state => state.userId && models.User.find(state.userId)
+  authenticated: state => state.token !== null
 }
 
 // mutations
@@ -27,8 +27,14 @@ export const mutations = {
     }
     state.token = token
   },
-  setUserId (state, userId) {
-    state.userId = userId
+  setUser (state, user) {
+    Vue.set(state, 'currentUser', {
+      ...state.currentUser,
+      ...user
+    })
+  },
+  removeUser (state) {
+    state.currentUser = null
   }
 }
 
@@ -79,6 +85,7 @@ export const actions = {
     })
     await dispatch('orm/deleteAll')
     commit('setToken', { token: null })
+    commit('removeUser')
     this.$router.push({ name: 'index' })
     commit('broadcaster/announce', {
       message: 'You have successfully logged out!',

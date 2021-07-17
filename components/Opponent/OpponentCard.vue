@@ -56,6 +56,8 @@
 </template>
 
 <script>
+  import { mapGetters } from 'vuex'
+
   export default {
     name: 'OpponentCard',
     props: {
@@ -65,8 +67,11 @@
       menu: false
     }),
     computed: {
+      ...mapGetters('teams', {
+        getTeam: 'get'
+      }),
       team () {
-        return this.$store.$db().model('Team').find(this.$route.params.teamId)
+        return this.getTeam(this.$route.params.teamId)
       },
       opponent () {
         return this.team.name === this.match.home

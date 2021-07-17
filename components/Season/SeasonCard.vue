@@ -43,6 +43,7 @@
 </template>
 
 <script>
+  import { mapGetters } from 'vuex'
   import { addYears, format, parseISO } from 'date-fns'
 
   export default {
@@ -51,8 +52,11 @@
       season: { type: Number, required: true }
     },
     computed: {
+      ...mapGetters('teams', {
+        getTeam: 'get'
+      }),
       team () {
-        return this.$store.$db().model('Team').find(this.$route.params.teamId)
+        return this.getTeam(this.$route.params.teamId)
       },
       competitions () {
         return this.$store.$db().model('Competition')

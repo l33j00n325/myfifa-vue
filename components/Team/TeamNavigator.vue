@@ -18,40 +18,42 @@
 </template>
 
 <script>
+  import { mapGetters } from 'vuex'
+
   export default {
     name: 'TeamNavigator',
     computed: {
+      ...mapGetters('teams', {
+        getTeam: 'get'
+      }),
       teamId () {
-        return parseInt(this.$route.params.teamId)
+        return this.$route.params.teamId
       },
       team () {
-        return this.$store.$db().model('Team').find(this.teamId)
+        return this.getTeam(this.teamId)
       },
       links () {
         return [
           {
             text: 'Dashboard',
             icon: 'mdi-view-dashboard',
-            to: {
-              name: 'teams-teamId',
-              params: { teamId: this.teamId }
-            },
+            to: `/teams/${this.teamId}`,
             exact: true
           },
           {
             text: 'Players',
             icon: 'mdi-run',
-            to: this.team.linkTo('players')
+            to: `/teams/${this.teamId}/players`
           },
           {
             text: 'Matches',
             icon: 'mdi-soccer-field',
-            to: this.team.linkTo('matches')
+            to: `/teams/${this.teamId}/matches`
           },
           {
             text: 'Squads',
             icon: 'mdi-clipboard-text',
-            to: this.team.linkTo('squads')
+            to: `/teams/${this.teamId}/squads`
           }
         ]
       }

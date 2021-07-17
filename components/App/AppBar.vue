@@ -69,17 +69,20 @@
       togglingMode: false
     }),
     computed: {
+      ...mapState([
+        'currentUser'
+      ]),
       ...mapState('app', [
         'headline'
       ]),
-      ...mapGetters([
-        'currentUser'
-      ]),
+      ...mapGetters('teams', {
+        getTeam: 'get'
+      }),
       teamId () {
         return this.$route.params.teamId
       },
       team () {
-        return this.$store.$db().model('Team').find(this.teamId)
+        return this.getTeam(this.teamId)
       },
       actions () {
         return [

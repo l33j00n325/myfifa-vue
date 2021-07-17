@@ -31,15 +31,18 @@
       }
     },
     computed: {
-      ...mapState(['token']),
+      ...mapState([
+        'token',
+        'currentUser'
+      ]),
       ...mapState('app', [
         'title'
       ]),
-      ...mapGetters([
-        'currentUser'
-      ]),
+      ...mapGetters('teams', {
+        getTeam: 'get'
+      }),
       team () {
-        return this.$store.$db().model('Team').find(this.$route.params.teamId)
+        return this.getTeam(this.$route.params.teamId)
       }
     },
     watch: {

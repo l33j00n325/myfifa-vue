@@ -30,6 +30,8 @@
 </template>
 
 <script>
+  import { mapGetters } from 'vuex'
+
   export default {
     name: 'SeasonCompetitionGrid',
     props: {
@@ -50,8 +52,11 @@
       ]
     }),
     computed: {
+      ...mapGetters('teams', {
+        getTeam: 'get'
+      }),
       team () {
-        return this.$store.$db().model('Team').find(this.$route.params.teamId)
+        return this.getTeam(this.$route.params.teamId)
       },
       competitions () {
         return this.$store.$db().model('Competition')

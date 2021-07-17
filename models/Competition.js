@@ -1,7 +1,6 @@
 import { Model } from '@vuex-orm/core'
 import Match from './Match'
 import Stage from './Stage'
-import Team from './Team'
 import { parseISO, format, addYears } from 'date-fns'
 
 class Competition extends Model {
@@ -23,7 +22,6 @@ class Competition extends Model {
       numAdvancesFromGroup: this.number(null).nullable(),
 
       // Associations
-      team: this.belongsTo(Team, 'teamId'),
       stages: this.hasMany(Stage, 'competitionId')
     }
   }

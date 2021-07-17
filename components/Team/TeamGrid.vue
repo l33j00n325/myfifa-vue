@@ -6,17 +6,18 @@
           :headers="headers"
           :items="teams"
           item-key="id"
+          sort-by="id"
+          sort-desc
           no-data-text="No Teams Recorded"
         >
           <template #item.name="{ item }">
             <v-btn
-              :to="item.link"
+              :to="`/teams/${item.id}`"
               nuxt
               text
               color="primary"
-            >
-              {{ item.name }}
-            </v-btn>
+              v-text="item.name"
+            />
           </template>
           <template #item.badgePath="{ item }">
             <v-img
@@ -41,6 +42,8 @@
 </template>
 
 <script>
+  import { mapGetters } from 'vuex'
+
   export default {
     name: 'TeamGrid',
     data: () => ({
@@ -52,14 +55,9 @@
       ],
       search: ''
     }),
-    computed: {
-      teams () {
-        return this.$store.$db().model('Team')
-          .query()
-          .orderBy('id', 'desc')
-          .get()
-      }
-    },
+    computed: mapGetters('teams', {
+      teams: 'list'
+    }),
     methods: {
       badgeUrl (team) {
         const { browserBaseURL } = this.$config.axios

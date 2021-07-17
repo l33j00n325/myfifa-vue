@@ -67,7 +67,7 @@
 </template>
 
 <script>
-  import { mapGetters, mapMutations, mapActions } from 'vuex'
+  import { mapState, mapMutations, mapActions } from 'vuex'
   import pick from 'lodash.pick'
   import { isRequired, isEmail } from '@/functions'
 
@@ -88,11 +88,9 @@
         ]
       }
     }),
-    computed: {
-      ...mapGetters([
-        'currentUser'
-      ])
-    },
+    computed: mapState([
+      'currentUser'
+    ]),
     mounted () {
       this.attributes = pick(this.currentUser, [
         'full_name',

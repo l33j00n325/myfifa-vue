@@ -9,7 +9,6 @@ import Cap from './Cap'
 import Match from './Match'
 import Goal from './Goal'
 import Booking from './Booking'
-import Team from './Team'
 
 export default class Player extends Model {
   static entity = 'Player'
@@ -35,7 +34,6 @@ export default class Player extends Model {
       age: this.number(16),
 
       // Associations
-      team: this.belongsTo(Team, 'teamId'),
       histories: this.hasMany(PlayerHistory, 'playerId'),
       injuries: this.hasMany(Injury, 'playerId'),
       loans: this.hasMany(Loan, 'playerId'),

@@ -67,7 +67,7 @@
 </template>
 
 <script>
-  import { mapGetters, mapMutations, mapActions } from 'vuex'
+  import { mapState, mapMutations, mapActions } from 'vuex'
   import { isRequired } from '@/functions'
 
   export default {
@@ -86,11 +86,9 @@
       },
       visible: false
     }),
-    computed: {
-      ...mapGetters([
-        'currentUser'
-      ])
-    },
+    computed: mapState([
+      'currentUser'
+    ]),
     mounted () {
       this.user.id = this.currentUser.id
     },

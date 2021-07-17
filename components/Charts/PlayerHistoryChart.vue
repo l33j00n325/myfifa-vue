@@ -13,6 +13,7 @@
 </template>
 
 <script>
+  import { mapGetters } from 'vuex'
   import { format, parseISO } from 'date-fns'
 
   export default {
@@ -27,8 +28,11 @@
       ratio: { type: String, default: 'ct-major-tenth' }
     },
     computed: {
+      ...mapGetters('teams', {
+        getTeam: 'get'
+      }),
       team () {
-        return this.$store.$db().model('Team').find(this.$route.params.teamId)
+        return this.getTeam(this.$route.params.teamId)
       },
       lastContract () {
         return this.$store.$db().model('Contract')

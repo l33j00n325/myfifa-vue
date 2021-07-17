@@ -8,6 +8,7 @@
 </template>
 
 <script>
+  import { mapGetters } from 'vuex'
   import { sum } from '@/functions'
 
   export default {
@@ -21,8 +22,11 @@
       seasonEnd: { type: String, default: null }
     },
     computed: {
+      ...mapGetters('teams', {
+        getTeam: 'get'
+      }),
       team () {
-        return this.$store.$db().model('Team').find(this.$route.params.teamId)
+        return this.getTeam(this.$route.params.teamId)
       },
       contractsAtStart () {
         return this.$store.$db().model('Contract')

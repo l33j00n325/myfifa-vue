@@ -1,6 +1,5 @@
 import { Model } from '@vuex-orm/core'
 import { parseISO } from 'date-fns'
-import Team from './Team'
 import PenaltyShootout from './PenaltyShootout'
 import Goal from './Goal'
 import Substitution from './Substitution'
@@ -32,7 +31,6 @@ export default class Match extends Model {
       teamResult: this.attr(null),
 
       // Associations
-      team: this.belongsTo(Team, 'teamId'),
       penaltyShootout: this.hasOne(PenaltyShootout, 'matchId'),
       goals: this.hasMany(Goal, 'matchId'),
       substitutions: this.hasMany(Substitution, 'matchId'),

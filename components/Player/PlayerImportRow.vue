@@ -213,7 +213,7 @@
 </template>
 
 <script>
-  import { mapActions } from 'vuex'
+  import { mapGetters, mapActions } from 'vuex'
   import { addYears, format, parseISO } from 'date-fns'
   import { positions } from '@/constants'
   import { isRequired, isNumber, inRange } from '@/functions'
@@ -241,8 +241,11 @@
       ]
     }),
     computed: {
+      ...mapGetters('teams', {
+        getTeam: 'get'
+      }),
       team () {
-        return this.$store.$db().model('Team').find(this.$route.params.teamId)
+        return this.getTeam(this.$route.params.teamId)
       },
       contract () {
         return this.player.contractsAttributes[0]

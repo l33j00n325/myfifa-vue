@@ -58,6 +58,8 @@
 </template>
 
 <script>
+  import { mapGetters } from 'vuex'
+
   export default {
     name: 'PlayerCard',
     props: {
@@ -65,11 +67,14 @@
       color: { type: String, default: 'info' }
     },
     computed: {
+      ...mapGetters('teams', {
+        getTeam: 'get'
+      }),
       player () {
         return this.$store.$db().model('Player').find(this.playerId)
       },
       team () {
-        return this.$store.$db().model('Team').find(this.$route.params.teamId)
+        return this.getTeam(this.$route.params.teamId)
       }
     }
   }

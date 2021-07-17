@@ -1,18 +1,48 @@
+import Vue from 'vue'
 import { gql } from 'nuxt-graphql-request'
 import { teamFragment } from '@/fragments'
 
+export const state = () => ({
+  records: {}
+})
+
+export const getters = {
+  list: state => Object.values(state.records),
+  get: state => id => state.records[id]
+}
+
+export const mutations = {
+  setRecord (state, record) {
+    Vue.set(state.records, record.id, {
+      ...state[record.id],
+      ...record
+    })
+  },
+  removeRecord (state, recordId) {
+    Vue.delete(state.records, recordId)
+  }
+}
+
 // actions
 export const actions = {
-  async fetch () {
+  insert ({ commit, dispatch }, data) {
+    if (Array.isArray(data)) {
+      data.forEach(record => dispatch('insert', record))
+    } else {
+      // TODO: strip out competitions, matches, players, and squads
+      commit('setRecord', data)
+    }
+  },
+  async fetch ({ dispatch }) {
     const { teams } = await this.$graphql.default.request(gql`
       query fetchTeams {
         teams { ...TeamData }
       }
       ${teamFragment}
     `)
-    this.$db().model('Team').insert({ data: teams })
+    dispatch('insert', teams)
   },
-  async get (_, { id, query }) {
+  async get ({ dispatch }, { id, query }) {
     query = query || gql`
       query fetchTeam($id: ID!) {
         team(id: $id) { ...TeamData }
@@ -21,9 +51,9 @@ export const actions = {
     `
 
     const { team } = await this.$graphql.default.request(query, { id })
-    this.$db().model('Team').insertOrUpdate({ data: team })
+    dispatch('insert', team)
   },
-  async create (_, attributes) {
+  async create ({ dispatch }, attributes) {
     const query = gql`
       mutation createTeam($attributes: TeamAttributes!) {
         addTeam(attributes: $attributes) {
@@ -38,7 +68,7 @@ export const actions = {
       await this.$graphql.default.request(query, { attributes })
 
     if (team) {
-      this.$db().model('Team').insert({ data: team })
+      dispatch('insert', team)
       return team
     } else {
       throw new Error(errors.fullMessages[0])
@@ -60,7 +90,7 @@ export const actions = {
       throw new Error(errors.fullMessages[0])
     }
   },
-  async remove (_, teamId) {
+  async remove ({ commit }, teamId) {
     const query = gql`
       mutation removeTeam($id: ID!) {
         removeTeam(id: $id) {
@@ -75,7 +105,7 @@ export const actions = {
     if (errors) {
       throw new Error(errors.fullMessages[0])
     } else {
-      this.$db().model('Team').delete(teamId)
+      commit('removeRecord', teamId)
     }
   }
 }

@@ -37,6 +37,7 @@
 </template>
 
 <script>
+  import { mapGetters } from 'vuex'
   import { addYears, format, parseISO } from 'date-fns'
 
   export default {
@@ -54,8 +55,11 @@
       ]
     }),
     computed: {
+      ...mapGetters('teams', {
+        getTeam: 'get'
+      }),
       team () {
-        return this.$store.$db().model('Team').find(this.$route.params.teamId)
+        return this.getTeam(this.$route.params.teamId)
       },
       seasonStart () {
         let date = parseISO(this.team.startedOn)
