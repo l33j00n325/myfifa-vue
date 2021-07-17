@@ -22,7 +22,7 @@
           v-model="attributes.champion"
           label="Champion"
           prepend-icon="mdi-crown"
-          :items="record.teamOptions"
+          :items="competitionTeams"
           :rules="rulesFor.champion"
         />
       </v-col>
@@ -43,7 +43,7 @@
             v-model="attributes.name"
             label="Name"
             prepend-icon="mdi-trophy"
-            :items="competitions"
+            :items="competitionNames"
             :rules="rulesFor.name"
             :loading="loadingCompetitions"
             spellcheck="false"
@@ -108,9 +108,10 @@
 </template>
 
 <script>
-  import { mapActions } from 'vuex'
+  import { mapState, mapActions } from 'vuex'
+  import filter from 'lodash.filter'
   import pick from 'lodash.pick'
-  import { TeamAccessible, DialogFormable } from '@/mixins'
+  import { DialogFormable, CompetitionAccessible } from '@/mixins'
   import { isRequired, isNumber } from '@/functions'
 
   const presetFormats = [
@@ -123,7 +124,7 @@
     name: 'CompetitionForm',
     mixins: [
       DialogFormable,
-      TeamAccessible
+      CompetitionAccessible
     ],
     props: {
       record: { type: Object, default: null },
@@ -159,6 +160,9 @@
       presetFormats
     }),
     computed: {
+      ...mapState('competitions', {
+        competitionRecords: 'records'
+      }),
       title () {
         if (this.close) {
           return 'Close Competition'
@@ -168,16 +172,11 @@
           return 'New Competition'
         }
       },
-      competitions () {
-        return [
-          ...new Set(
-            this.$store.$db().model('Competition')
-              .query()
-              .where('teamId', this.team.id)
-              .get()
-              .map(c => c.name)
-          )
-        ]
+      competitionNames () {
+        return [...new Set(
+          filter(this.competitionRecords, { teamId: this.team.id })
+            .map(c => c.name)
+        )]
       }
     },
     watch: {

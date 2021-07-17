@@ -10,13 +10,12 @@
       </v-toolbar-title>
       <v-spacer />
       <v-btn
-        :to="link"
+        :to="`/teams/${team.id}/seasons/${season}`"
         dark
         text
         nuxt
-      >
-        View Season
-      </v-btn>
+        v-text="'View Season'"
+      />
     </v-toolbar>
     <v-list
       nav
@@ -26,12 +25,12 @@
       <v-list-item
         v-for="competition in competitions"
         :key="competition.id"
-        :to="competition.link"
+        :to="`/teams/${team.id}/competitions/${competition.id}`"
         nuxt
       >
         <v-list-item-icon>
-          <v-icon :color="competition.statusColor">
-            {{ competition.statusIcon }}
+          <v-icon :color="statusColor(competition)">
+            {{ statusIcon(competition) }}
           </v-icon>
         </v-list-item-icon>
         <v-list-item-content>
@@ -45,6 +44,7 @@
 <script>
   import { mapGetters } from 'vuex'
   import { addYears, format, parseISO } from 'date-fns'
+  import filter from 'lodash.filter'
 
   export default {
     name: 'SeasonCard',
@@ -52,32 +52,42 @@
       season: { type: Number, required: true }
     },
     computed: {
-      ...mapGetters('teams', {
-        getTeam: 'get'
+      ...mapGetters({
+        getTeam: 'teams/get',
+        getCompetition: 'competitions/get'
       }),
       team () {
         return this.getTeam(this.$route.params.teamId)
       },
       competitions () {
-        return this.$store.$db().model('Competition')
-          .query()
-          .with('team')
-          .where('teamId', this.team.id)
-          .where('season', this.season)
-          .get()
+        const competitions = (this.team.competitionsIds || []).map(
+          competitionId => this.getCompetition(competitionId)
+        )
+        return filter(competitions, { season: this.season })
       },
       seasonLabel () {
         let start = addYears(parseISO(this.team.startedOn), this.season)
         const end = addYears(start, 1)
         return `${format(start, 'yyyy')} - ${format(end, 'yyyy')}`
+      }
+    },
+    methods: {
+      statusIcon (competition) {
+        if (competition.champion === this.team.name) {
+          return 'mdi-trophy'
+        } else if (competition.champion) {
+          return 'mdi-check'
+        } else {
+          return 'mdi-timelapse'
+        }
       },
-      link () {
-        return {
-          name: 'teams-teamId-seasons-season',
-          params: {
-            teamId: this.team.id,
-            season: this.season
-          }
+      statusColor (competition) {
+        if (competition.champion === this.team.name) {
+          return 'yellow darken-2'
+        } else if (competition.champion) {
+          return 'green'
+        } else {
+          return 'gray'
         }
       }
     }

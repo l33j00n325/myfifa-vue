@@ -3,11 +3,10 @@
     <v-row>
       <v-col cols="12">
         <v-btn
-          :to="competition.linkToSeason"
+          :to="`/teams/${teamId}/seasons/${competition.season}`"
           nuxt
-        >
-          View Season
-        </v-btn>
+          v-text="'View Season'"
+        />
       </v-col>
       <v-col
         class="text-center"
@@ -24,16 +23,14 @@
           <v-icon
             color="yellow darken-2"
             left
-          >
-            mdi-crown
-          </v-icon>
+            v-text="'mdi-crown'"
+          />
           {{ competition.champion }}
           <v-icon
             color="yellow darken-2"
             right
-          >
-            mdi-crown
-          </v-icon>
+            v-text="'mdi-crown'"
+          />
         </div>
       </v-col>
       <v-col
@@ -51,9 +48,8 @@
               dark
               color="orange"
               v-on="on"
-            >
-              Edit
-            </v-btn>
+              v-text="'Edit'"
+            />
           </template>
         </competition-form>
         <competition-form
@@ -67,9 +63,8 @@
               dark
               color="red"
               v-on="on"
-            >
-              Close
-            </v-btn>
+              v-text="'Close'"
+            />
           </template>
         </competition-form>
         <stage-form
@@ -86,9 +81,8 @@
               class="my-1"
               dark
               v-on="on"
-            >
-              Remove
-            </v-btn>
+              v-text="'Remove'"
+            />
           </template>
         </record-remove>
       </v-col>
@@ -166,27 +160,17 @@
 
 <script>
   import { mapMutations, mapActions } from 'vuex'
-  import { TeamAccessible } from '@/mixins'
+  import { CompetitionAccessible } from '@/mixins'
 
   export default {
     name: 'CompetitionPage',
     mixins: [
-      TeamAccessible
+      CompetitionAccessible
     ],
     data: () => ({
       table: 0
     }),
     computed: {
-      competitionId () {
-        return parseInt(this.$route.params.competitionId)
-      },
-      competition () {
-        return this.$store.$db().model('Competition')
-          .query()
-          .with('stages.tableRows')
-          .with('stages.fixtures.legs')
-          .find(this.competitionId)
-      },
       title () {
         return this.competition
           ? `${this.competition.name} (${this.competitionSeason})`
@@ -223,7 +207,7 @@
       }
     },
     async fetch () {
-      await this.getCompetition(this.competitionId)
+      await this.fetchCompetition(this.competitionId)
       this.setPage({
         title: this.title,
         headline: this.title
@@ -234,7 +218,7 @@
         setPage: 'setPage'
       }),
       ...mapActions({
-        getCompetition: 'competitions/get',
+        fetchCompetition: 'competitions/get',
         fetchStages: 'stages/fetch'
       })
     }

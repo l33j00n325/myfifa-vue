@@ -1,9 +1,42 @@
+import Vue from 'vue'
 import { gql } from 'nuxt-graphql-request'
 import { competitionFragment, stageFragment } from '@/fragments'
 
-// actions
+export const state = () => ({
+  records: {}
+})
+
+export const getters = {
+  list: state => Object.values(state.records),
+  get: state => id => state.records[id]
+}
+
+export const mutations = {
+  setRecord (state, record) {
+    Vue.set(state.records, record.id, {
+      ...state.records[record.id],
+      ...record
+    })
+  },
+  removeRecord (state, recordId) {
+    Vue.delete(state.records, recordId)
+  }
+}
+
 export const actions = {
-  async fetch (_, { teamId, query }) {
+  insert ({ commit, dispatch }, data) {
+    if (Array.isArray(data)) {
+      data.forEach(record => dispatch('insert', record))
+    } else {
+      if ('stages' in data) {
+        dispatch('stages/insert', data.stages, { root: true })
+        data['stagesIds'] = data.stages.map(stage => stage.id)
+        delete data.stages
+      }
+      commit('setRecord', data)
+    }
+  },
+  async fetch ({ dispatch }, { teamId, query }) {
     query = query || gql`
       query fetchCompetitions($teamId: ID!) {
         team(id: $teamId) {
@@ -15,9 +48,9 @@ export const actions = {
 
     const { team: { competitions } } =
       await this.$graphql.default.request(query, { teamId })
-    this.$db().model('Competition').insertOrUpdate({ data: competitions })
+    dispatch('insert', competitions)
   },
-  async get (_, id) {
+  async get ({ dispatch }, id) {
     const query = gql`
       query fetchCompetition($id: ID!) {
         competition(id: $id) {
@@ -30,9 +63,9 @@ export const actions = {
     `
 
     const { competition } = await this.$graphql.default.request(query, { id })
-    this.$db().model('Competition').insertOrUpdate({ data: competition })
+    dispatch('insert', competition)
   },
-  async create (_, { teamId, attributes }) {
+  async create ({ dispatch }, { teamId, attributes }) {
     const query = gql`
       mutation createCompetition($teamId: ID!, $attributes: CompetitionAttributes!) {
         addCompetition(teamId: $teamId, attributes: $attributes) {
@@ -46,7 +79,7 @@ export const actions = {
       await this.$graphql.default.request(query, { teamId, attributes })
 
     if (competition) {
-      this.$db().model('Competition').insert({ data: competition })
+      dispatch('insert', competition)
       return competition
     } else {
       throw new Error(errors.fullMessages[0])
@@ -68,7 +101,7 @@ export const actions = {
       throw new Error(errors.fullMessages[0])
     }
   },
-  async remove (_, id) {
+  async remove ({ commit }, id) {
     const query = gql`
       mutation removeCompetition($id: ID!) {
         removeCompetition(id: $id) {
@@ -83,7 +116,7 @@ export const actions = {
     if (errors) {
       throw new Error(errors.fullMessages[0])
     } else {
-      this.$db().model('Competition').delete(id)
+      commit('removeRecord', id)
     }
   }
 }

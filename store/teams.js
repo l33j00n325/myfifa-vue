@@ -14,7 +14,7 @@ export const getters = {
 export const mutations = {
   setRecord (state, record) {
     Vue.set(state.records, record.id, {
-      ...state[record.id],
+      ...state.records[record.id],
       ...record
     })
   },
@@ -28,7 +28,14 @@ export const actions = {
     if (Array.isArray(data)) {
       data.forEach(record => dispatch('insert', record))
     } else {
-      // TODO: strip out competitions, matches, players, and squads
+      // strip out competitions, matches, players, and squads
+      ['competitions', 'matches', 'players', 'squads'].forEach(property => {
+        if (property in data) {
+          dispatch(`${property}/insert`, data[property], { root: true })
+          data[`${property}Ids`] = data[property].map(record => record.id)
+          delete data[property]
+        }
+      })
       commit('setRecord', data)
     }
   },

@@ -39,7 +39,7 @@
           v-for="leg in item.legs"
           :key="leg.id"
         >
-          {{ leg.score }}
+          {{ leg.homeScore || '' }} - {{ leg.awayScore || '' }}
         </div>
       </template>
       <template #item.awayTeam="{ item }">
@@ -90,7 +90,7 @@
     }),
     computed: {
       items () {
-        return Object.values(this.round.fixtures) || []
+        return this.round.fixtures || []
       },
       headers () {
         const headers = [

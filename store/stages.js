@@ -1,7 +1,42 @@
+import Vue from 'vue'
 import { gql } from 'nuxt-graphql-request'
 
-// actions
+export const state = () => ({
+  records: {}
+})
+
+export const getters = {
+  list: state => Object.values(state.records),
+  get: state => id => state.records[id]
+}
+
+export const mutations = {
+  setRecord (state, record) {
+    Vue.set(state.records, record.id, {
+      ...state.records[record.id],
+      ...record
+    })
+  },
+  removeRecord (state, recordId) {
+    Vue.delete(state.records, recordId)
+  }
+}
+
 export const actions = {
+  insert ({ commit, dispatch }, data) {
+    if (Array.isArray(data)) {
+      data.forEach(record => dispatch('insert', record))
+    } else {
+      ['fixtures', 'tableRows'].forEach(property => {
+        if (property in data) {
+          dispatch(`${property}/insert`, data[property], { root: true })
+          data[`${property}Ids`] = data[property].map(record => record.id)
+          delete data[property]
+        }
+      })
+      commit('setRecord', data)
+    }
+  },
   async create (_, { competitionId, attributes }) {
     const query = gql`
       mutation createStage($competitionId: ID!, $attributes: StageAttributes!) {
@@ -34,7 +69,7 @@ export const actions = {
       throw new Error(errors.fullMessages[0])
     }
   },
-  async remove (_, id) {
+  async remove ({ commit }, id) {
     const query = gql`
       mutation removeStage($id: ID!) {
         removeStage(id: $id) {
@@ -49,7 +84,7 @@ export const actions = {
     if (errors) {
       throw new Error(errors.fullMessages[0])
     } else {
-      this.$db().model('Stage').delete(id)
+      commit('removeRecord', id)
     }
   }
 }

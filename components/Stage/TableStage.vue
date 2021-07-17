@@ -105,7 +105,7 @@
     }),
     computed: {
       items () {
-        return Object.values(this.table.tableRows || {})
+        return this.table.tableRows || []
       },
       headers () {
         const headers = [

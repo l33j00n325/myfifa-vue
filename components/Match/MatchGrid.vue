@@ -74,6 +74,7 @@
 </template>
 
 <script>
+  import { mapGetters } from 'vuex'
   import { addYears, parseISO } from 'date-fns'
   import { TeamAccessible } from '@/mixins'
 
@@ -105,6 +106,9 @@
       }
     }),
     computed: {
+      ...mapGetters('competitions', {
+        getCompetition: 'get'
+      }),
       matches () {
         return this.$store.$db().model('Match')
           .query()
@@ -127,11 +131,11 @@
         }))
       },
       competitions () {
-        return this.$store.$db().model('Competition')
-          .query()
-          .where('teamId', this.team.id)
-          .where(comp => this.filters.Season === null || comp.season === this.filters.Season)
-          .get()
+        const competitions = (this.team.competitionsIds || []).map(
+          competitionId => this.getCompetition(competitionId)
+        )
+        return competitions
+          .filter(competition => [null, competition.season].includes(this.filters.Season))
           .map(comp => comp.name)
       },
       filterTypeOptions () {

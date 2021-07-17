@@ -14,7 +14,7 @@ export const getters = {
 export const mutations = {
   setRecord (state, record) {
     Vue.set(state.records, record.id, {
-      ...state[record.id],
+      ...state.records[record.id],
       ...record
     })
   },
@@ -44,7 +44,6 @@ export const actions = {
 
     const { team: { squads } } =
       await this.$graphql.default.request(query, { teamId })
-
     dispatch('insert', squads)
   },
   async create ({ dispatch }, { teamId, attributes }) {

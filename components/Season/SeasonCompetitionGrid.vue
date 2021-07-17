@@ -31,6 +31,7 @@
 
 <script>
   import { mapGetters } from 'vuex'
+  import filter from 'lodash.filter'
 
   export default {
     name: 'SeasonCompetitionGrid',
@@ -52,19 +53,18 @@
       ]
     }),
     computed: {
-      ...mapGetters('teams', {
-        getTeam: 'get'
+      ...mapGetters({
+        getTeam: 'teams/get',
+        getCompetition: 'competitions/get'
       }),
       team () {
         return this.getTeam(this.$route.params.teamId)
       },
       competitions () {
-        return this.$store.$db().model('Competition')
-          .query()
-          .with('team')
-          .where('teamId', this.team.id)
-          .where('season', this.season)
-          .get()
+        const competitions = (this.team.competitionsIds || []).map(
+          competitionId => this.getCompetition(competitionId)
+        )
+        return filter(competitions, { season: this.season })
       },
       results () {
         return this.competitionStats.reduce((results, stats) => {
@@ -87,9 +87,9 @@
 
             return {
               name: competition.name,
-              link: competition.link,
-              statusIcon: competition.statusIcon,
-              statusColor: competition.statusColor,
+              link: `/teams/${this.team.id}/competitions/${competition.id}`,
+              statusIcon: this.statusIcon(competition),
+              statusColor: this.statusColor(competition),
               matchesPlayed: wins + draws + losses,
               wins,
               draws,
@@ -99,6 +99,26 @@
               goalDifference: goalsFor - goalsAgainst
             }
           })
+        }
+      }
+    },
+    methods: {
+      statusIcon (competition) {
+        if (competition.champion === this.team.name) {
+          return 'mdi-trophy'
+        } else if (competition.champion) {
+          return 'mdi-check'
+        } else {
+          return 'mdi-timelapse'
+        }
+      },
+      statusColor (competition) {
+        if (competition.champion === this.team.name) {
+          return 'yellow darken-2'
+        } else if (competition.champion) {
+          return 'green'
+        } else {
+          return 'gray'
         }
       }
     }

@@ -95,8 +95,9 @@
 </template>
 
 <script>
-  import { mapState, mapActions } from 'vuex'
+  import { mapState, mapGetters, mapActions } from 'vuex'
   import { gql } from 'nuxt-graphql-request'
+  import filter from 'lodash.filter'
   import pick from 'lodash.pick'
   import { parseISO } from 'date-fns'
   import { TeamAccessible, DialogFormable } from '@/mixins'
@@ -134,6 +135,10 @@
       ...mapState('matches', [
         'teamOptions'
       ]),
+      ...mapGetters({
+        getCompetition: 'competitions/get',
+        getStage: 'stages/get'
+      }),
       title () {
         return this.record ? 'Edit Match' : 'New Match'
       },
@@ -149,37 +154,31 @@
         return parseInt((datePlayed - startDate) / (525600 * 60 * 1000))
       },
       competitions () {
-        return this.$store.$db().model('Competition')
-          .query()
-          .where('teamId', this.team.id)
-          .where('season', this.season)
-          .where(comp => this.attributes.competition === comp.name || !comp.champion)
-          .get()
+        return (this.team.competitionsIds || [])
+          .map(competitionId => this.getCompetition(competitionId))
+          .filter(competition => competition.season === this.season &&
+            (this.attributes.competition === competition.name || !competition.champion)
+          )
           .map(competition => competition.name)
       },
       competitionId () {
         if (this.attributes.competition) {
-          const competition = this.$store.$db().model('Competition')
-            .query()
-            .where('teamId', this.team.id)
-            .where('season', this.season)
-            .where('name', this.attributes.competition)
-            .first()
+          const competitions = (this.team.competitionsIds || []).map(
+            competitionId => this.getCompetition(competitionId)
+          )
+          const competition = filter(competitions, {
+            season: this.season,
+            name: this.attributes.competition
+          })[0]
           return competition ? competition.id : null
         }
         return null
       },
       stages () {
-        const competition = this.$store.$db().model('Competition')
-          .query()
-          .with('stages')
-          .where('teamId', this.team.id)
-          .where('season', this.season)
-          .where('name', this.attributes.competition)
-          .first()
-
-        if (competition) {
-          return competition.stages
+        if (this.competitionId) {
+          const competition = this.getCompetition(this.competitionId)
+          return (competition.stagesIds || [])
+            .map(stageId => this.getStage(stageId))
             .filter(stage => !stage.table)
             .map(stage => stage.name)
         } else {
