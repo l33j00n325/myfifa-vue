@@ -1,4 +1,3 @@
-// actions
 export const actions = {
   async get ({ commit }) {
     const data = await this.$axios.$get('user')

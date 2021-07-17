@@ -165,14 +165,14 @@
         ${competitionFragment}
       `
 
-      await this.getTeam({ id: this.team.id, query })
+      await this.fetchTeam({ id: this.team.id, query })
     },
     methods: {
       ...mapMutations('app', {
         setPage: 'setPage'
       }),
       ...mapActions({
-        getTeam: 'teams/get'
+        fetchTeam: 'teams/get'
       }),
       getPlayersByStatus (status) {
         return this.$store.$db().model('Player')

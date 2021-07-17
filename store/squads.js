@@ -1,9 +1,38 @@
+import Vue from 'vue'
 import { gql } from 'nuxt-graphql-request'
 import { squadFragment } from '@/fragments'
 
-// actions
+export const state = () => ({
+  records: {}
+})
+
+export const getters = {
+  list: state => Object.values(state.records),
+  get: state => id => state.records[id]
+}
+
+export const mutations = {
+  setRecord (state, record) {
+    Vue.set(state.records, record.id, {
+      ...state[record.id],
+      ...record
+    })
+  },
+  removeRecord (state, recordId) {
+    Vue.delete(state.records, recordId)
+  }
+}
+
 export const actions = {
-  async fetch (_, { teamId }) {
+  insert ({ commit, dispatch }, data) {
+    if (Array.isArray(data)) {
+      data.forEach(record => dispatch('insert', record))
+    } else {
+      // TODO: strip Player from SquadPlayer
+      commit('setRecord', data)
+    }
+  },
+  async fetch ({ dispatch }, { teamId }) {
     const query = gql`
       query fetchSquads($teamId: ID!) {
         team(id: $teamId) {
@@ -15,9 +44,10 @@ export const actions = {
 
     const { team: { squads } } =
       await this.$graphql.default.request(query, { teamId })
-    this.$db().model('Squad').insertOrUpdate({ data: squads })
+
+    dispatch('insert', squads)
   },
-  async create (_, { teamId, attributes }) {
+  async create ({ dispatch }, { teamId, attributes }) {
     const query = gql`
       mutation createSquad($teamId: ID!, $attributes: SquadAttributes!) {
         addSquad(teamId: $teamId, attributes: $attributes) {
@@ -32,12 +62,12 @@ export const actions = {
       await this.$graphql.default.request(query, { teamId, attributes })
 
     if (squad) {
-      this.$db().model('Squad').insertOrUpdate({ data: squad })
+      dispatch('insert', squad)
     } else {
       throw new Error(errors.fullMessages[0])
     }
   },
-  async update (_, { id, attributes }) {
+  async update ({ dispatch }, { id, attributes }) {
     const query = gql`
       mutation ($id: ID!, $attributes: SquadAttributes!) {
         updateSquad(id: $id, attributes: $attributes) {
@@ -52,12 +82,12 @@ export const actions = {
       await this.$graphql.default.request(query, { id, attributes })
 
     if (squad) {
-      this.$db().model('Squad').insertOrUpdate({ data: squad })
+      dispatch('insert', squad)
     } else {
       throw new Error(errors.fullMessages[0])
     }
   },
-  async remove (_, id) {
+  async remove ({ commit }, id) {
     const query = gql`
       mutation removeSquad($id: ID!) {
         removeSquad(id: $id) {
@@ -72,10 +102,10 @@ export const actions = {
     if (errors) {
       throw new Error(errors.fullMessages[0])
     } else {
-      this.$db().model('Squad').delete(id)
+      commit('removeRecord', id)
     }
   },
-  async storeLineup (_, { matchId, squadId }) {
+  async storeLineup ({ dispatch }, { matchId, squadId }) {
     const query = gql`
       mutation storeMatchLineupToSquad($matchId: ID!, $squadId: ID!) {
         storeMatchLineupToSquad(matchId: $matchId, squadId: $squadId) {
@@ -88,9 +118,7 @@ export const actions = {
       await this.$graphql.default.request(query, { matchId, squadId })
 
     if (squad) {
-      this.$db().model('SquadPlayer').delete(
-        squadPlayer => squadPlayer.squadId === squadId
-      )
+      dispatch('insert', squad)
     }
   }
 }

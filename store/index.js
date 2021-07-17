@@ -5,19 +5,16 @@ import * as models from '@/models'
 import cookieparser from 'cookieparser'
 import pkg from '@/package.json'
 
-// initial state
 export const state = () => ({
   version: pkg.version,
   token: null,
   currentUser: null
 })
 
-// getters
 export const getters = {
   authenticated: state => state.token !== null
 }
 
-// mutations
 export const mutations = {
   setToken (state, { token, expires }) {
     if (token) {
@@ -38,7 +35,6 @@ export const mutations = {
   }
 }
 
-// actions
 export const actions = {
   async nuxtServerInit ({ commit, dispatch }, { req, params }) {
     if (req.headers.cookie) {

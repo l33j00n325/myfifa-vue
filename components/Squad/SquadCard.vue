@@ -62,6 +62,8 @@
 </template>
 
 <script>
+  import { matchPositions } from '@/constants'
+
   export default {
     name: 'SquadCard',
     props: {
@@ -83,7 +85,7 @@
         let playerIds = []
 
         this.squad.squadPlayers.forEach(squadPlayer => {
-          if (squadPlayer.positionType === positionType) {
+          if (matchPositions[squadPlayer.pos].positionType === positionType) {
             playerIds.push(squadPlayer.playerId)
           }
         })
@@ -93,7 +95,7 @@
           .whereIdIn(playerIds)
           .sum('ovr')
 
-        return Math.round(totalOvr / playerIds.length)
+        return Math.round(totalOvr / (playerIds.length || 1))
       },
       nameOf (playerId) {
         const player = this.$store.$db().model('Player').find(playerId)

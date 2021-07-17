@@ -34,7 +34,8 @@
 </template>
 
 <script>
-  import { mapActions } from 'vuex'
+  import { mapState, mapActions } from 'vuex'
+  import filter from 'lodash.filter'
   import { TeamAccessible } from '@/mixins'
 
   export default {
@@ -46,11 +47,11 @@
       match: { type: Object, required: true }
     },
     computed: {
+      ...mapState('squads', {
+        squadRecords: 'records'
+      }),
       squads () {
-        return this.$store.$db().model('Squad')
-          .query()
-          .where('teamId', this.team.id)
-          .get()
+        return filter(this.squadRecords, { teamId: this.team.id })
       }
     },
     methods: {

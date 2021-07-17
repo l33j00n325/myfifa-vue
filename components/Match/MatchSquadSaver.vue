@@ -46,8 +46,9 @@
 </template>
 
 <script>
-  import { mapActions } from 'vuex'
+  import { mapState, mapActions } from 'vuex'
   import { TeamAccessible } from '@/mixins'
+  import filter from 'lodash.filter'
 
   export default {
     name: 'MatchSquadSaver',
@@ -63,12 +64,11 @@
       squadName: ''
     }),
     computed: {
+      ...mapState('squads', {
+        squadRecords: 'records'
+      }),
       squads () {
-        return this.$store.$db().model('Squad')
-          .query()
-          .with('squadPlayers')
-          .where('teamId', this.team.id)
-          .get()
+        return filter(this.squadRecords, { teamId: this.team.id })
       },
       starters () {
         return this.match.caps.filter(c => c.start === 0)

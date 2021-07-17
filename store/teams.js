@@ -23,7 +23,6 @@ export const mutations = {
   }
 }
 
-// actions
 export const actions = {
   insert ({ commit, dispatch }, data) {
     if (Array.isArray(data)) {

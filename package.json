@@ -20,6 +20,7 @@
     "flagpack-core": "https://github.com/avarixe/flagpack-core.git#add-dz-and-xk",
     "js-cookie": "^2.2.0",
     "lodash.camelcase": "^4.3.0",
+    "lodash.filter": "^4.6.0",
     "lodash.findlast": "^4.6.0",
     "lodash.groupby": "^4.6.0",
     "lodash.mapkeys": "^4.6.0",
