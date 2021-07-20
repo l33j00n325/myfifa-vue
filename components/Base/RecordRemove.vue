@@ -79,14 +79,10 @@
         try {
           this.loading = true
 
-          await this.$store.dispatch(
-            `${this.store}/remove`,
-            this.record.id
-          )
-
-          if (this.redirect) {
-            this.$router.push(this.redirect)
-          }
+          await Promise.all([
+            this.$store.dispatch(`${this.store}/remove`, this.record.id),
+            () => { this.redirect && this.$router.push(this.redirect) }
+          ])
 
           this.dialog = false
         } catch (e) {

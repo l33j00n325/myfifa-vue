@@ -11,7 +11,7 @@
         left
         v-text="`mdi-${icon}`"
       />
-      {{ event.player_name }}
+      {{ event.playerName }}
     </div>
     <div>
       <v-icon
@@ -20,7 +20,7 @@
         left
         v-text="'mdi-subdirectory-arrow-right'"
       />
-      {{ event.replaced_by }}
+      {{ event.replacedBy }}
     </div>
   </base-match-event>
 </template>

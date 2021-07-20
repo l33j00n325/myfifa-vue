@@ -19,19 +19,19 @@
     <template #form>
       <v-col cols="6">
         <v-text-field
-          v-model="penaltyShootout.home_score"
+          v-model.number="attributes.homeScore"
           label="Home Score"
           prepend-icon="mdi-soccer"
-          :rules="rulesFor.home_score"
+          :rules="rulesFor.homeScore"
           inputmode="numeric"
         />
       </v-col>
       <v-col cols="6">
         <v-text-field
-          v-model="penaltyShootout.away_score"
+          v-model.number="attributes.awayScore"
           label="Away Score"
           prepend-icon="mdi-soccer"
-          :rules="rulesFor.away_score"
+          :rules="rulesFor.awayScore"
           inputmode="numeric"
         />
       </v-col>
@@ -56,16 +56,16 @@
       record: { type: Object, default: null }
     },
     data: () => ({
-      penaltyShootout: {
-        home_score: null,
-        away_score: null
+      attributes: {
+        homeScore: null,
+        awayScore: null
       },
       rulesFor: {
-        home_score: [
+        homeScore: [
           isRequired('Home Score'),
           isNumber('Home Score')
         ],
-        away_score: [
+        awayScore: [
           isRequired('Away Score'),
           isNumber('Away Score')
         ]
@@ -79,27 +79,21 @@
     watch: {
       dialog (val) {
         if (val && this.record) {
-          this.penaltyShootout = pick(this.record, [
-            'id',
-            'home_score',
-            'away_score'
+          this.attributes = pick(this.record, [
+            'homeScore',
+            'awayScore'
           ])
         }
       }
     },
     methods: {
       ...mapActions('penaltyShootout', {
-        createPenaltyShootout: 'create',
-        updatePenaltyShootout: 'update'
+        savePenaltyShootout: 'save'
       }),
       async submit () {
-        const save = this.record
-          ? this.updatePenaltyShootout
-          : this.createPenaltyShootout
-
-        await save({
+        await this.savePenaltyShootout({
           matchId: this.match.id,
-          penaltyShootout: this.penaltyShootout
+          attributes: this.attributes
         })
       }
     }

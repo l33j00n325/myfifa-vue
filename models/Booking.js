@@ -9,21 +9,21 @@ export default class Booking extends Model {
     return {
       // Primary/Foreign keys
       id: this.number(0),
-      match_id: this.number(0),
-      player_id: this.number(null).nullable(),
+      matchId: this.number(0),
+      playerId: this.number(null).nullable(),
 
       // Database fields
-      player_name: this.string(''),
+      playerName: this.string(''),
       minute: this.number(0),
-      red_card: this.boolean(false),
-      created_at: this.string(''),
+      redCard: this.boolean(false),
+      createdAt: this.string(''),
 
       // Calculated fields
       home: this.boolean(true),
 
       // Associations
-      match: this.belongsTo(Match, 'match_id'),
-      player: this.belongsTo(Player, 'player_id')
+      match: this.belongsTo(Match, 'matchId'),
+      player: this.belongsTo(Player, 'playerId')
     }
   }
 

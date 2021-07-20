@@ -19,7 +19,7 @@
     <template #form>
       <v-col cols="12">
         <v-radio-group
-          v-model="booking.home"
+          v-model="attributes.home"
           row
           hide-details
           @change="clearNames"
@@ -37,21 +37,21 @@
         </v-radio-group>
       </v-col>
       <v-col cols="12">
-        <minute-field v-model="minute" />
+        <minute-field v-model.number="minute" />
       </v-col>
       <v-col cols="12">
-        <player-select
-          v-if="!booking.home ^ match.home === team.title"
-          v-model="booking.player_id"
-          :players="unsubbedPlayers"
+        <cap-select
+          v-if="!attributes.home ^ match.home === team.name"
+          v-model="attributes.playerId"
+          :caps="unsubbedPlayers"
           required
         />
         <v-text-field
           v-else
-          v-model="booking.player_name"
+          v-model="attributes.playerName"
           label="Player"
           prepend-icon="mdi-account"
-          :rules="rulesFor.player_name"
+          :rules="rulesFor.playerName"
           spellcheck="false"
           autocapitalize="words"
           autocomplete="off"
@@ -60,7 +60,7 @@
       </v-col>
       <v-col cols="12">
         <v-radio-group
-          v-model="booking.red_card"
+          v-model="attributes.redCard"
           row
           hide-details
         >
@@ -97,14 +97,14 @@
       record: { type: Object, default: null }
     },
     data: () => ({
-      booking: {
+      attributes: {
         home: true,
-        player_id: null,
-        player_name: '',
-        red_card: false
+        playerId: null,
+        playerName: '',
+        redCard: false
       },
       rulesFor: {
-        player_name: [isRequired('Player')]
+        playerName: [isRequired('Player')]
       }
     }),
     computed: {
@@ -114,15 +114,18 @@
     },
     watch: {
       dialog (val) {
-        if (val && this.record) {
-          this.booking = pick(this.record, [
-            'id',
-            'home',
-            'player_id',
-            'player_name',
-            'red_card'
-          ])
-          this.minute = this.record.minute
+        if (val) {
+          if (this.record) {
+            this.attributes = pick(this.record, [
+              'home',
+              'playerId',
+              'playerName',
+              'redCard'
+            ])
+            this.minute = this.record.minute
+          }
+        } else {
+          this.attributes.redCard = false
         }
       }
     },
@@ -132,21 +135,24 @@
         updateBooking: 'update'
       }),
       clearNames () {
-        this.booking.player_id = null
-        this.booking.player_name = null
+        this.attributes.playerId = null
+        this.attributes.playerName = null
       },
       async submit () {
-        const booking = {
-          ...this.booking,
+        const attributes = {
+          ...this.attributes,
           minute: this.minute
         }
 
         if (this.record) {
-          await this.updateBooking(booking)
+          await this.updateBooking({
+            id: this.record.id,
+            attributes
+          })
         } else {
           await this.createBooking({
             matchId: this.match.id,
-            booking
+            attributes
           })
         }
       }

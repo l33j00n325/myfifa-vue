@@ -33,8 +33,8 @@
         ref="calendar"
         v-model="day"
         type="month"
-        :now="team.currently_on"
-        :start="team.started_on"
+        :now="team.currentlyOn"
+        :start="team.startedOn"
         :show-month-on-first="false"
       >
         <template #day="{ date }">
@@ -87,15 +87,15 @@
       }
     },
     mounted () {
-      this.day = this.team.currently_on
+      this.day = this.team.currentlyOn
     },
     methods: {
       matchesOn (date) {
         return this.$store.$db().model('Match')
           .query()
           .with('team')
-          .where('team_id', this.team.id)
-          .where('played_on', date)
+          .where('teamId', this.team.id)
+          .where('playedOn', date)
           .get()
       }
     }

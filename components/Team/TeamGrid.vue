@@ -8,31 +8,39 @@
           item-key="id"
           no-data-text="No Teams Recorded"
         >
-          <template #item.title="{ item }">
+          <template #item.name="{ item }">
             <v-btn
               :to="item.link"
               nuxt
               text
               color="primary"
-            >
-              {{ item.title }}
-            </v-btn>
+              v-text="item.name"
+            />
           </template>
-          <template #item.badge_path="{ item }">
+          <template #item.badgePath="{ item }">
             <v-img
-              v-if="item.badge_path"
+              v-if="item.badgePath"
               :src="badgeUrl(item)"
               height="32px"
               width="32px"
               contain
               class="text-center"
             />
+            <v-tooltip
+              v-else
+              bottom
+            >
+              <template #activator="{ on }">
+                <v-icon v-on="on">mdi-shield-off-outline</v-icon>
+              </template>
+              <span>Edit Team to upload Badge</span>
+            </v-tooltip>
           </template>
-          <template #item.started_on="{ item }">
-            {{ item.started_on | formatDate }}
+          <template #item.startedOn="{ item }">
+            {{ item.startedOn | formatDate }}
           </template>
-          <template #item.currently_on="{ item }">
-            {{ item.currently_on | formatDate }}
+          <template #item.currentlyOn="{ item }">
+            {{ item.currentlyOn | formatDate }}
           </template>
         </v-data-table>
       </client-only>
@@ -45,10 +53,10 @@
     name: 'TeamGrid',
     data: () => ({
       headers: [
-        { text: 'Team Name', value: 'title', align: 'center' },
-        { text: 'Badge', value: 'badge_path', align: 'center', width: '32px', sortable: false },
-        { text: 'Start Date', value: 'started_on', align: 'center' },
-        { text: 'Current Date', value: 'currently_on', align: 'center' }
+        { text: 'Name', value: 'name', align: 'center' },
+        { text: 'Badge', value: 'badgePath', align: 'center', width: '32px', sortable: false },
+        { text: 'Start Date', value: 'startedOn', align: 'center' },
+        { text: 'Current Date', value: 'currentlyOn', align: 'center' }
       ],
       search: ''
     }),
@@ -63,8 +71,8 @@
     methods: {
       badgeUrl (team) {
         const { browserBaseURL } = this.$config.axios
-        return team.badge_path
-          ? `${browserBaseURL.replace(/\/api/, '')}${team.badge_path}`
+        return team.badgePath
+          ? `${browserBaseURL.replace(/\/api/, '')}${team.badgePath}`
           : null
       }
     }

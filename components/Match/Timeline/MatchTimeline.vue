@@ -1,6 +1,6 @@
 <template>
   <v-timeline dense>
-    <template v-if="events.length > 0 || match.penalty_shootout">
+    <template v-if="events.length > 0 || match.penaltyShootout">
       <template v-for="event in events">
         <component
           :is="`${event.type}-event`"
@@ -39,16 +39,16 @@
           ...this.match.bookings,
           ...this.match.substitutions,
           ...this.match.goals
-        ], ['minute', 'created_at'], ['asc', 'asc'])
+        ], ['minute', 'createdAt'], ['asc', 'asc'])
 
-        if (this.match.penalty_shootout) {
-          events.push(this.match.penalty_shootout)
+        if (this.match.penaltyShootout) {
+          events.push(this.match.penaltyShootout)
         }
 
         return events
       },
       readonly () {
-        return this.team.currently_on !== this.match.played_on
+        return this.team.currentlyOn !== this.match.playedOn
       }
     }
   }

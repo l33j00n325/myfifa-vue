@@ -71,77 +71,55 @@
 </template>
 
 <script>
-  import findLast from 'lodash.findlast'
-
-  function calcTotal (records, attribute) {
-    return records.reduce((total, record) => total + record[attribute], 0)
-  }
-
-  function calcAverage (records, attribute) {
-    return calcTotal(records, attribute) / records.length
-  }
-
   export default {
     name: 'SeasonSummary',
     props: {
-      seasonStart: { type: String, required: true },
-      seasonEnd: { type: String, required: true },
-      seasonData: { type: Object, required: true }
+      competitionStats: { type: Array, required: true },
+      playerDevelopmentStats: { type: Array, required: true }
     },
     computed: {
       team () {
         return this.$store.$db().model('Team').find(this.$route.params.teamId)
       },
-      recordsAtStart () {
-        let records = []
-        for (const playerId in this.seasonData.records) {
-          const record = findLast(
-            this.seasonData.records[playerId],
-            record => record.recorded_on <= this.seasonStart
-          )
-          record && records.push(record)
-        }
-        return records
-      },
-      recordsAtEnd () {
-        let records = []
-        for (const playerId in this.seasonData.records) {
-          if (this.seasonData.expired_players.indexOf(parseInt(playerId)) < 0) {
-            const record = findLast(
-              this.seasonData.records[playerId],
-              record => record.recorded_on <= this.seasonEnd
-            )
-            record && records.push(record)
-          }
-        }
-        return records
-      },
       startTeamValue () {
-        return calcTotal(this.recordsAtStart, 'value')
+        return this.playerDevelopmentStats
+          .reduce((total, stats) => total + stats.value[0], 0)
       },
       endTeamValue () {
-        return calcTotal(this.recordsAtEnd, 'value')
+        return this.playerDevelopmentStats
+          .reduce((total, stats) => total + stats.value[1], 0)
       },
       startTeamOvr () {
-        return calcAverage(this.recordsAtStart, 'ovr')
+        return this.playerDevelopmentStats.reduce(
+          (total, stats) => total + stats.ovr[0],
+          0
+        ) / (this.playerDevelopmentStats.length || 1)
       },
       endTeamOvr () {
-        return calcAverage(this.recordsAtEnd, 'ovr')
+        return this.playerDevelopmentStats.reduce(
+          (total, stats) => total + stats.ovr[1],
+          0
+        ) / (this.playerDevelopmentStats.length || 1)
       },
       numWins () {
-        return calcTotal(Object.values(this.seasonData.results), 'wins')
+        return this.competitionStats
+          .reduce((total, stats) => total + stats.wins, 0)
       },
       numDraws () {
-        return calcTotal(Object.values(this.seasonData.results), 'draws')
+        return this.competitionStats
+          .reduce((total, stats) => total + stats.draws, 0)
       },
       numLosses () {
-        return calcTotal(Object.values(this.seasonData.results), 'losses')
+        return this.competitionStats
+          .reduce((total, stats) => total + stats.losses, 0)
       },
       numGoalsFor () {
-        return calcTotal(Object.values(this.seasonData.results), 'gf')
+        return this.competitionStats
+          .reduce((total, stats) => total + stats.goalsFor, 0)
       },
       numGoalsAgainst () {
-        return calcTotal(Object.values(this.seasonData.results), 'ga')
+        return this.competitionStats
+          .reduce((total, stats) => total + stats.goalsAgainst, 0)
       }
     }
   }

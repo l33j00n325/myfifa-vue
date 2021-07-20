@@ -18,19 +18,19 @@
     </template>
     <template #form>
       <v-col cols="12">
-        <minute-field v-model="minute" />
+        <minute-field v-model.number="minute" />
       </v-col>
       <v-col cols="12">
-        <player-select
-          v-model="substitution.player_id"
-          :players="unsubbedPlayers"
+        <cap-select
+          v-model="attributes.playerId"
+          :caps="unsubbedPlayers"
           icon="mdi-subdirectory-arrow-left"
           required
         />
       </v-col>
       <v-col cols="12">
         <player-select
-          v-model="substitution.replacement_id"
+          v-model="attributes.replacementId"
           :players="availablePlayers"
           item-value="id"
           label="Replaced By"
@@ -40,7 +40,7 @@
       </v-col>
       <v-col cols="12">
         <v-checkbox
-          v-model="substitution.injury"
+          v-model="attributes.injury"
           label="Injury"
           hide-details
         />
@@ -65,9 +65,9 @@
       record: { type: Object, default: null }
     },
     data: () => ({
-      substitution: {
-        player_id: null,
-        replacement_id: '',
+      attributes: {
+        playerId: null,
+        replacementId: '',
         injury: false
       }
     }),
@@ -76,32 +76,35 @@
         return `${this.record ? 'Edit' : 'Record'} Substitution`
       },
       availablePlayers () {
-        const selectedIds = this.sortedCaps.map(cap => cap.player_id)
+        const selectedIds = this.sortedCaps.map(cap => cap.playerId)
         return this.activePlayers.filter(player => {
           if (selectedIds.indexOf(player.id) < 0) {
             return true
           } else if (this.record) {
-            return player.id === this.record.replacement_id
+            return player.id === this.record.replacementId
           }
         })
       },
       unsubbedPlayers () {
         return this.sortedCaps.filter(cap =>
-          (cap.player_id !== this.substitution.replacement_id && !cap.subbed_out) ||
-          (this.record && cap.player_id === this.record.player_id)
+          (cap.playerId !== this.attributes.replacementId && !cap.subbedOut) ||
+          (this.record && cap.playerId === this.record.playerId)
         )
       }
     },
     watch: {
       dialog (val) {
-        if (val && this.record) {
-          this.substitution = pick(this.record, [
-            'id',
-            'player_id',
-            'replacement_id',
-            'injury'
-          ])
-          this.minute = this.record.minute
+        if (val) {
+          if (this.record) {
+            this.attributes = pick(this.record, [
+              'playerId',
+              'replacementId',
+              'injury'
+            ])
+            this.minute = this.record.minute
+          } else {
+            this.attributes.injury = false
+          }
         }
       }
     },
@@ -111,17 +114,20 @@
         updateSubstitution: 'update'
       }),
       async submit () {
-        const substitution = {
-          ...this.substitution,
+        const attributes = {
+          ...this.attributes,
           minute: this.minute
         }
 
         if (this.record) {
-          await this.updateSubstitution(substitution)
+          await this.updateSubstitution({
+            id: this.record.id,
+            attributes
+          })
         } else {
           await this.createSubstitution({
             matchId: this.match.id,
-            substitution
+            attributes
           })
         }
       }

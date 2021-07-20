@@ -165,29 +165,27 @@
 </template>
 
 <script>
-  import { mapMutations, mapActions } from 'vuex'
+  import { mapMutations } from 'vuex'
+  import { gql } from 'nuxt-graphql-request'
   import { TeamAccessible } from '@/mixins'
+  import { competitionFragment, stageFragment } from '@/fragments'
 
   export default {
     name: 'CompetitionPage',
     mixins: [
       TeamAccessible
     ],
-    middleware: [
-      'authenticated'
-    ],
-    transition: 'fade-transition',
     data: () => ({
       table: 0
     }),
     computed: {
       competitionId () {
-        return this.$route.params.competitionId
+        return parseInt(this.$route.params.competitionId)
       },
       competition () {
         return this.$store.$db().model('Competition')
           .query()
-          .with('stages.table_rows')
+          .with('stages.tableRows')
           .with('stages.fixtures.legs')
           .find(this.competitionId)
       },
@@ -227,29 +225,30 @@
       }
     },
     async fetch () {
-      await Promise.all([
-        this.getCompetition({ competitionId: this.competitionId }),
-        this.fetchStages({ competitionId: this.competitionId })
-      ])
+      const query = gql`
+        query fetchCompetition($id: ID!) {
+          competition(id: $id) {
+            ...CompetitionData
+            stages { ...StageData }
+          }
+        }
+        ${competitionFragment}
+        ${stageFragment}
+      `
+
+      const { competition } = await this.$graphql.default.request(query, {
+        id: this.competitionId
+      })
+      await this.$store.$db().model('Competition').insertOrUpdate({ data: competition })
+
       this.setPage({
         title: this.title,
         headline: this.title
       })
     },
-    methods: {
-      ...mapMutations('app', {
-        setPage: 'setPage'
-      }),
-      ...mapActions({
-        getCompetition: 'competitions/get',
-        fetchStages: 'stages/fetch'
-      })
-    },
-    head () {
-      return {
-        title: this.title
-      }
-    }
+    methods: mapMutations('app', {
+      setPage: 'setPage'
+    })
   }
 </script>
 

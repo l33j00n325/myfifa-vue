@@ -13,14 +13,15 @@
   "dependencies": {
     "@nuxtjs/axios": "^5.12.5",
     "@vuex-orm/core": "^0.36.2",
-    "actioncable": "^5.2.1",
     "cookieparser": "^0.1.0",
     "date-fns": "^2.8.1",
     "email-validator": "^2.0.4",
     "flagpack-core": "https://github.com/avarixe/flagpack-core.git#add-dz-and-xk",
     "js-cookie": "^2.2.0",
+    "lodash.camelcase": "^4.3.0",
     "lodash.findlast": "^4.6.0",
     "lodash.groupby": "^4.6.0",
+    "lodash.mapkeys": "^4.6.0",
     "lodash.orderby": "^4.6.0",
     "lodash.pick": "^4.4.0",
     "nuxt": "^2.11.0",
@@ -44,6 +45,8 @@
     "eslint-plugin-promise": "^4.0.1",
     "eslint-plugin-standard": "^4.0.0",
     "eslint-plugin-vue": "^5.2.3",
-    "eslint-plugin-vuetify": "^1.0.0-beta.2"
+    "eslint-plugin-vuetify": "^1.0.0-beta.2",
+    "graphql": "^15.5.1",
+    "nuxt-graphql-request": "^4.0.0"
   }
 }

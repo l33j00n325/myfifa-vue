@@ -1,5 +1,4 @@
 import { Model } from '@vuex-orm/core'
-import { parseISO } from 'date-fns'
 import Team from './Team'
 import PenaltyShootout from './PenaltyShootout'
 import Goal from './Goal'
@@ -15,30 +14,31 @@ export default class Match extends Model {
     return {
       // Primary/Foreign keys
       id: this.number(0),
-      team_id: this.number(0),
+      teamId: this.number(0),
 
       // Database fields
       home: this.string(''),
       away: this.string(''),
       competition: this.string(''),
       stage: this.string('').nullable(),
-      played_on: this.string(''),
-      extra_time: this.boolean(false),
-      home_score: this.number(0),
-      away_score: this.number(0),
+      playedOn: this.string(''),
+      extraTime: this.boolean(false),
+      homeScore: this.number(0),
+      awayScore: this.number(0),
 
       // Calculated fields
       score: this.string(''),
-      team_result: this.attr(null),
+      teamResult: this.attr(null),
+      season: this.number(0),
 
       // Associations
-      team: this.belongsTo(Team, 'team_id'),
-      penalty_shootout: this.hasOne(PenaltyShootout, 'match_id'),
-      goals: this.hasMany(Goal, 'match_id'),
-      substitutions: this.hasMany(Substitution, 'match_id'),
-      bookings: this.hasMany(Booking, 'match_id'),
-      caps: this.hasMany(Cap, 'match_id'),
-      players: this.belongsToMany(Player, Cap, 'match_id', 'player_id')
+      team: this.belongsTo(Team, 'teamId'),
+      penaltyShootout: this.hasOne(PenaltyShootout, 'matchId'),
+      goals: this.hasMany(Goal, 'matchId'),
+      substitutions: this.hasMany(Substitution, 'matchId'),
+      bookings: this.hasMany(Booking, 'matchId'),
+      caps: this.hasMany(Cap, 'matchId'),
+      players: this.belongsToMany(Player, Cap, 'matchId', 'playerId')
     }
   }
 
@@ -46,26 +46,20 @@ export default class Match extends Model {
     return {
       name: 'teams-teamId-matches-matchId',
       params: {
-        teamId: this.team_id,
+        teamId: this.teamId,
         matchId: this.id
       }
     }
   }
 
   get opponent () {
-    return this.home === this.team.title
+    return this.home === this.team.home
       ? this.away
       : this.home
   }
 
-  get season () {
-    const startDate = parseISO(this.team.started_on)
-    const datePlayed = parseISO(this.played_on)
-    return parseInt((datePlayed - startDate) / (525600 * 60 * 1000))
-  }
-
   get resultColor () {
-    switch (this.team_result) {
+    switch (this.teamResult) {
       case 'win':
         return 'success'
       case 'draw':

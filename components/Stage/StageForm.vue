@@ -12,15 +12,14 @@
           dark
           color="teal"
           v-on="on"
-        >
-          Add Stage
-        </v-btn>
+          v-text="'Add Stage'"
+        />
       </slot>
     </template>
     <template #form>
       <v-col cols="12">
         <v-text-field
-          v-model="stage.name"
+          v-model="attributes.name"
           label="Name"
           prepend-icon="mdi-table"
           :rules="rulesFor.name"
@@ -32,7 +31,7 @@
       </v-col>
       <v-col cols="12">
         <v-radio-group
-          v-model="stage.table"
+          v-model="attributes.table"
           row
           hide-details
         >
@@ -48,23 +47,23 @@
       </v-col>
       <v-col cols="12">
         <v-text-field
-          v-model="stage.num_teams"
+          v-model.number="attributes.numTeams"
           label="Number of Teams"
           prepend-icon="mdi-account-group"
-          :rules="rulesFor.num_teams"
+          :rules="rulesFor.numTeams"
           inputmode="numeric"
         />
       </v-col>
       <v-scroll-y-transition mode="out-in">
         <v-col
-          v-if="!stage.table"
+          v-if="!attributes.table"
           cols="12"
         >
           <v-text-field
-            v-model="stage.num_fixtures"
+            v-model.number="attributes.numFixtures"
             label="Number of Fixtures"
             prepend-icon="mdi-sword-cross"
-            :rules="rulesFor.num_fixtures"
+            :rules="rulesFor.numFixtures"
             inputmode="numeric"
           />
         </v-col>
@@ -88,28 +87,33 @@
     },
     data: () => ({
       valid: false,
-      stage: {
+      attributes: {
         name: '',
-        num_teams: null,
-        num_fixtures: null,
+        numTeams: null,
+        numFixtures: null,
         table: false
       },
       rulesFor: {
         name: [isRequired('Name')],
-        num_teams: [
+        numTeams: [
           isRequired('Number of Teams'),
           isNumber('Number of Teams')
         ],
-        num_fixtures: [
+        numFixtures: [
           isRequired('Number of Fixtures'),
           isNumber('Number of Fixtures')
         ]
       }
     }),
     watch: {
-      'stage.table' (val) {
+      dialog (open) {
+        if (open) {
+          this.attributes.table = false
+        }
+      },
+      'attributes.table' (val) {
         if (val) {
-          this.stage.num_fixtures = null
+          this.attributes.numFixtures = null
         }
       }
     },

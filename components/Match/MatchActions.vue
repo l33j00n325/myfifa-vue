@@ -8,7 +8,7 @@
     <match-squad-applier :match="match" />
     <match-squad-saver :match="match" />
     <penalty-shootout-form
-      v-if="!match.penalty_shootout"
+      v-if="!match.penaltyShootout"
       :match="match"
       color="indigo"
       class="d-inline-block"

@@ -17,7 +17,7 @@
     <template #form>
       <v-col cols="12">
         <v-text-field
-          v-model="row.name"
+          v-model="attributes.name"
           label="Team"
           prepend-icon="mdi-shield-half-full"
           hide-details
@@ -29,7 +29,7 @@
       </v-col>
       <v-col cols="4">
         <v-text-field
-          v-model="row.wins"
+          v-model.number="attributes.wins"
           prepend-icon="mdi-alpha-w"
           :rules="rulesForNumber"
           hide-details
@@ -38,7 +38,7 @@
       </v-col>
       <v-col cols="4">
         <v-text-field
-          v-model="row.draws"
+          v-model.number="attributes.draws"
           prepend-icon="mdi-alpha-d"
           :rules="rulesForNumber"
           hide-details
@@ -47,7 +47,7 @@
       </v-col>
       <v-col cols="4">
         <v-text-field
-          v-model="row.losses"
+          v-model.number="attributes.losses"
           prepend-icon="mdi-alpha-l"
           :rules="rulesForNumber"
           hide-details
@@ -56,7 +56,7 @@
       </v-col>
       <v-col cols="6">
         <v-text-field
-          v-model="row.goals_for"
+          v-model.number="attributes.goalsFor"
           label="GF"
           prepend-icon="mdi-soccer"
           :rules="rulesForNumber"
@@ -66,7 +66,7 @@
       </v-col>
       <v-col cols="6">
         <v-text-field
-          v-model="row.goals_against"
+          v-model.number="attributes.goalsAgainst"
           label="GA"
           prepend-icon="mdi-soccer"
           :rules="rulesForNumber"
@@ -94,13 +94,13 @@
       record: { type: Object, default: null }
     },
     data: () => ({
-      row: {
+      attributes: {
         name: '',
         wins: null,
         draws: null,
         losses: null,
-        goals_for: null,
-        goals_against: null
+        goalsFor: null,
+        goalsAgainst: null
       },
       rulesForNumber: [isNumber()]
     }),
@@ -112,30 +112,32 @@
     watch: {
       dialog (val) {
         if (val && this.record) {
-          this.row = pick(this.record, [
-            'id',
+          this.attributes = pick(this.record, [
             'name',
             'wins',
             'draws',
             'losses',
-            'goals_for',
-            'goals_against'
+            'goalsFor',
+            'goalsAgainst'
           ])
         }
       }
     },
     methods: {
       ...mapActions('tableRows', {
-        createRow: 'create',
-        updateRow: 'update'
+        createTableRow: 'create',
+        updateTableRow: 'update'
       }),
       async submit () {
         if (this.record) {
-          await this.updateRow(this.row)
+          await this.updateTableRow({
+            id: this.record.id,
+            attributes: this.attributes
+          })
         } else {
-          await this.createRow({
+          await this.createTableRow({
             stageId: this.stage.id,
-            tableRow: this.row
+            attributes: this.attributes
           })
         }
       }

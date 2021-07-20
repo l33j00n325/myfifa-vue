@@ -11,6 +11,13 @@ export default {
     axios: {
       browserBaseURL: process.env.BASE_URL,
     },
+    graphql: {
+      clients: {
+        default: {
+          endpoint: `${process.env.BASE_URL}/graphql`
+        }
+      }
+    },
     cableURL: process.env.CABLE_URL,
     clientId: process.env.CLIENT_ID,
     clientSecret: process.env.CLIENT_SECRET
@@ -50,7 +57,8 @@ export default {
   // loading: '~/components/App/LoadingOverlay.vue', // { color: '#3B8070' },
 
   buildModules: [
-    '@nuxtjs/vuetify'
+    '@nuxtjs/vuetify',
+    'nuxt-graphql-request'
   ],
 
   modules: [
@@ -62,6 +70,15 @@ export default {
   ],
 
   // vuetify: {},
+
+  graphql: {
+    clients: {
+      default: {
+        endpoint: `${process.env.BASE_URL}/graphql`
+      }
+    },
+    includeNodeModules: true
+  },
 
   /*
   ** Plugins to load before mounting the App

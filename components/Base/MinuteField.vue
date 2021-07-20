@@ -25,7 +25,7 @@
         const label = 'Minute'
         return [
           isRequired(label),
-          inRange(label, [1, this.match.extra_time ? 120 : 90])
+          inRange(label, [1, this.match.extraTime ? 120 : 90])
         ]
       }
     },

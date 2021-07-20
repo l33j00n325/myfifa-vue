@@ -11,7 +11,7 @@
     <template #form>
       <v-col cols="12">
         <v-text-field
-          v-model="player.name"
+          v-model="attributes.name"
           label="Name"
           prepend-icon="mdi-account"
           :rules="rulesFor.name"
@@ -22,11 +22,11 @@
         />
       </v-col>
       <v-col cols="12">
-        <nationality-field v-model="player.nationality" />
+        <nationality-field v-model="attributes.nationality" />
       </v-col>
       <v-col cols="12">
         <v-select
-          v-model="player.pos"
+          v-model="attributes.pos"
           label="Position"
           prepend-icon="mdi-run"
           :items="positions"
@@ -35,7 +35,7 @@
       </v-col>
       <v-col cols="12">
         <v-select
-          v-model="player.sec_pos"
+          v-model="attributes.secPos"
           label="Secondary Position(s)"
           prepend-icon="mdi-walk"
           :items="positions"
@@ -46,7 +46,7 @@
       </v-col>
       <v-col cols="12">
         <v-text-field
-          v-model="player.age"
+          v-model.number="attributes.age"
           label="Age"
           prepend-icon="mdi-calendar"
           :rules="rulesFor.age"
@@ -55,7 +55,7 @@
       </v-col>
       <v-col cols="12">
         <v-text-field
-          v-model="player.ovr"
+          v-model.number="attributes.ovr"
           label="OVR"
           prepend-icon="mdi-trending-up"
           :rules="rulesFor.ovr"
@@ -64,7 +64,7 @@
       </v-col>
       <v-col cols="12">
         <v-money-field
-          v-model="player.value"
+          v-model.number="attributes.value"
           label="Value"
           :prefix="team.currency"
           required
@@ -72,16 +72,16 @@
       </v-col>
       <v-col cols="12">
         <v-text-field
-          v-model="player.kit_no"
+          v-model.number="attributes.kitNo"
           label="Kit Number"
           prepend-icon="mdi-tshirt-crew"
-          :rules="rulesFor.kit_no"
+          :rules="rulesFor.kitNo"
           inputmode="numeric"
         />
       </v-col>
       <v-col cols="12">
         <v-checkbox
-          v-model="player.youth"
+          v-model="attributes.youth"
           label="Youth Player"
           :disabled="record !== null"
           hide-details
@@ -109,14 +109,14 @@
     },
     data: () => ({
       valid: false,
-      player: {
+      attributes: {
         name: '',
         pos: '',
         nationality: null,
-        sec_pos: [],
+        secPos: [],
         ovr: null,
         value: '',
-        kit_no: null,
+        kitNo: null,
         age: null,
         youth: false
       },
@@ -132,7 +132,7 @@
           isNumber('OVR'),
           inRange('OVR', [40, 100])
         ],
-        kit_no: [
+        kitNo: [
           isNumber('Kit Number'),
           inRange('Kit Number', [1, 99])
         ]
@@ -141,24 +141,28 @@
     }),
     computed: {
       title () {
-        return this.record ? `Edit ${this.player.name}` : 'New Player'
+        return this.record ? `Edit ${this.attributes.name}` : 'New Player'
       }
     },
     watch: {
       dialog (val) {
-        if (val && this.record) {
-          this.player = pick(this.record, [
-            'id',
-            'name',
-            'pos',
-            'age',
-            'nationality',
-            'ovr',
-            'value',
-            'kit_no',
-            'youth'
-          ])
-          this.player.sec_pos = [...this.record.sec_pos]
+        if (val) {
+          if (this.record) {
+            this.attributes = pick(this.record, [
+              'name',
+              'pos',
+              'age',
+              'nationality',
+              'ovr',
+              'value',
+              'kitNo',
+              'youth'
+            ])
+            this.attributes.secPos = [...this.record.secPos]
+          } else {
+            this.attributes.secPos = []
+            this.attributes.youth = false
+          }
         }
       }
     },
@@ -169,11 +173,14 @@
       }),
       async submit () {
         if (this.record) {
-          await this.updatePlayer(this.player)
+          await this.updatePlayer({
+            id: this.record.id,
+            attributes: this.attributes
+          })
         } else {
           const { id: playerId } = await this.createPlayer({
             teamId: this.team.id,
-            player: this.player
+            attributes: this.attributes
           })
           this.$router.push({
             name: 'teams-teamId-players-playerId',

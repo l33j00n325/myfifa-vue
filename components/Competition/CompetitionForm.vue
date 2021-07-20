@@ -19,7 +19,7 @@
         cols="12"
       >
         <v-autocomplete
-          v-model="competition.champion"
+          v-model="attributes.champion"
           label="Champion"
           prepend-icon="mdi-crown"
           :items="record.teamOptions"
@@ -40,7 +40,7 @@
         </v-col>
         <v-col cols="12">
           <v-combobox
-            v-model="competition.name"
+            v-model="attributes.name"
             label="Name"
             prepend-icon="mdi-trophy"
             :items="competitions"
@@ -55,7 +55,7 @@
         <template v-if="!record">
           <v-col cols="12">
             <v-select
-              v-model="competition.preset_format"
+              v-model="attributes.presetFormat"
               label="Preset Format"
               prepend-icon="mdi-cogs"
               :items="presetFormats"
@@ -64,38 +64,38 @@
           </v-col>
           <v-scroll-y-transition mode="out-in">
             <v-col
-              v-if="competition.preset_format"
+              v-if="attributes.presetFormat"
               cols="12"
             >
               <v-text-field
-                v-model="competition.num_teams"
+                v-model.number="attributes.numTeams"
                 label="Number of Teams"
                 prepend-icon="mdi-account-group"
-                :rules="rulesFor.num_teams"
+                :rules="rulesFor.numTeams"
                 inputmode="numeric"
               />
             </v-col>
           </v-scroll-y-transition>
           <v-scroll-y-transition mode="out-in">
             <v-row
-              v-if="competition.preset_format === 'Group + Knockout'"
+              v-if="attributes.presetFormat === 'Group + Knockout'"
               dense
             >
               <v-col cols="12">
                 <v-text-field
-                  v-model="competition.num_teams_per_group"
+                  v-model.number="attributes.numTeamsPerGroup"
                   label="Teams per Group"
                   prepend-icon="mdi-table"
-                  :rules="rulesFor.num_teams_per_group"
+                  :rules="rulesFor.numTeamsPerGroup"
                   inputmode="numeric"
                 />
               </v-col>
               <v-col cols="12">
                 <v-text-field
-                  v-model="competition.num_advances_from_group"
+                  v-model.number="attributes.numAdvancesFromGroup"
                   label="Teams Advance per Group"
                   prepend-icon="mdi-tournament"
-                  :rules="rulesFor.num_advances_from_group"
+                  :rules="rulesFor.numAdvancesFromGroup"
                   inputmode="numeric"
                 />
               </v-col>
@@ -132,30 +132,31 @@
     data: () => ({
       valid: false,
       loadingCompetitions: false,
-      competition: {
+      attributes: {
         season: null,
         name: '',
-        preset_format: null,
-        num_teams: null,
-        num_teams_per_group: null,
-        num_advances_from_group: null
+        presetFormat: null,
+        numTeams: null,
+        numTeamsPerGroup: null,
+        numAdvancesFromGroup: null
       },
       rulesFor: {
         name: [isRequired('Name')],
-        num_teams: [
+        numTeams: [
           isRequired('Number of Teams'),
           isNumber('Number of Teams')
         ],
-        num_teams_per_group: [
+        numTeamsPerGroup: [
           isRequired('Teams per Group'),
           isNumber('Teams per Group')
         ],
-        num_advances_from_group: [
+        numAdvancesFromGroup: [
           isRequired('Teams Advance per Group'),
           isNumber('Teams Advance per Group')
         ],
         champion: [isRequired('Champion')]
-      }
+      },
+      presetFormats
     }),
     computed: {
       title () {
@@ -172,30 +173,26 @@
           ...new Set(
             this.$store.$db().model('Competition')
               .query()
-              .where('team_id', this.team.id)
+              .where('teamId', this.team.id)
               .get()
               .map(c => c.name)
           )
         ]
-      },
-      presetFormats () {
-        return presetFormats
       }
     },
     watch: {
       dialog (val) {
         if (val && this.record) {
-          this.competition = pick(this.record, [
-            'id',
+          this.attributes = pick(this.record, [
             'name',
             'champion',
             'season'
           ])
         } else {
-          this.competition.season = this.season
+          this.attributes.season = this.season
         }
 
-        if (this.competitions.length === 0) {
+        if (this.attributes.length === 0) {
           this.loadCompetitions()
         }
       }
@@ -218,11 +215,14 @@
       },
       async submit () {
         if (this.record) {
-          await this.updateCompetition(this.competition)
+          await this.updateCompetition({
+            id: this.record.id,
+            attributes: this.attributes
+          })
         } else {
           const { id: competitionId } = await this.createCompetition({
             teamId: this.team.id,
-            competition: this.competition
+            attributes: this.attributes
           })
           this.$router.push({
             name: 'teams-teamId-competitions-competitionId',

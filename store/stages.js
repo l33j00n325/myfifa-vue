@@ -1,22 +1,55 @@
+import { gql } from 'nuxt-graphql-request'
+
 // actions
 export const actions = {
-  async fetch (_, { competitionId }) {
-    const data = await this.$axios.$get(`competitions/${competitionId}/stages`)
-    this.$db().model('Stage').insert({ data })
+  async create (_, { competitionId, attributes }) {
+    const query = gql`
+      mutation createStage($competitionId: ID!, $attributes: StageAttributes!) {
+        addStage(competitionId: $competitionId, attributes: $attributes) {
+          errors { fullMessages }
+        }
+      }
+    `
+
+    const { addStage: { errors } } =
+      await this.$graphql.default.request(query, { competitionId, attributes })
+
+    if (errors) {
+      throw new Error(errors.fullMessages[0])
+    }
   },
-  async create (_, { competitionId, stage }) {
-    const data = await this.$axios.$post(
-      `competitions/${competitionId}/stages`,
-      { stage }
-    )
-    this.$db().model('Stage').insert({ data })
+  async update (_, { id, attributes }) {
+    const query = gql`
+      mutation ($id: ID!, $attributes: StageAttributes!) {
+        updateStage(id: $id, attributes: $attributes) {
+          errors { fullMessages }
+        }
+      }
+    `
+
+    const { updateStage: { errors } } =
+      await this.$graphql.default.request(query, { id, attributes })
+
+    if (errors) {
+      throw new Error(errors.fullMessages[0])
+    }
   },
-  async update (_, stage) {
-    const data = await this.$axios.$patch(`stages/${stage.id}`, { stage })
-    this.$db().model('Stage').insert({ data })
-  },
-  async remove (_, stageId) {
-    await this.$axios.$delete(`stages/${stageId}`)
-    this.$db().model('Stage').delete(stageId)
+  async remove (_, id) {
+    const query = gql`
+      mutation removeStage($id: ID!) {
+        removeStage(id: $id) {
+          errors { fullMessages }
+        }
+      }
+    `
+
+    const { removeStage: { errors } } =
+      await this.$graphql.default.request(query, { id })
+
+    if (errors) {
+      throw new Error(errors.fullMessages[0])
+    } else {
+      this.$db().model('Stage').delete(id)
+    }
   }
 }

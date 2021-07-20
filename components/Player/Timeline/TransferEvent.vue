@@ -8,7 +8,7 @@
     :dense="dense"
   >
     <template #heading>
-      {{ event.moved_on | formatDate }}
+      {{ event.movedOn | formatDate }}
     </template>
     <template #details>
       <tr>
@@ -23,13 +23,13 @@
         <td class="font-weight-bold">Transfer Fee</td>
         <td class="pl-1">{{ event.fee | formatMoney(team.currency) }}</td>
       </tr>
-      <tr v-if="event.traded_player">
+      <tr v-if="event.tradedPlayer">
         <td class="font-weight-bold">Traded Player</td>
-        <td class="pl-1">{{ event.traded_player }}</td>
+        <td class="pl-1">{{ event.tradedPlayer }}</td>
       </tr>
-      <tr v-if="event.addon_clause">
+      <tr v-if="event.addonClause">
         <td class="font-weight-bold">Add-On Clause</td>
-        <td class="pl-1">{{ event.addon_clause }}%</td>
+        <td class="pl-1">{{ event.addonClause }}%</td>
       </tr>
     </template>
   </base-player-event>
@@ -50,7 +50,7 @@
     },
     computed: {
       transferOut () {
-        return this.event.origin === this.team.title
+        return this.event.origin === this.team.name
       },
       title () {
         return this.transferOut

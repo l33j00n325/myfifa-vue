@@ -19,7 +19,7 @@
           cols="6"
           sm="2"
         >
-          <div class="text-h4">{{ player.sec_pos | listArray }}</div>
+          <div class="text-h4">{{ player.secPos | listArray }}</div>
           <div class="subheading">
             <fitty-text
               text="Secondary Position(s)"
@@ -75,12 +75,12 @@
                 >
                   <inline-select
                     :item="player"
-                    attribute="kit_no"
+                    attribute="kitNo"
                     label="Kit No"
                     :options="Array.from({ length: 98 }, (v, k) => k + 1)"
                     dense
                     display-class="text-h4 blue-grey--text"
-                    @change="updatePlayerAttribute(player.id, 'kit_no', $event)"
+                    @change="updatePlayerAttribute(player.id, 'kitNo', $event)"
                   />
                   <div class="subheading">Kit No</div>
                 </v-col>
@@ -119,14 +119,14 @@
                   cols="6"
                   sm="3"
                 >
-                  <div class="text-h4 teal--text">{{ numGames || 0 }}</div>
+                  <div class="text-h4 teal--text">{{ numMatches || 0 }}</div>
                   <div class="subheading">Matches</div>
                 </v-col>
                 <v-col
                   cols="6"
                   sm="3"
                 >
-                  <div class="text-h4 pink--text">{{ numCs || 0 }}</div>
+                  <div class="text-h4 pink--text">{{ numCleanSheets || 0 }}</div>
                   <div class="subheading">Clean Sheets</div>
                 </v-col>
                 <v-col
@@ -184,17 +184,23 @@
 
 <script>
   import { mapMutations, mapActions } from 'vuex'
+  import { gql } from 'nuxt-graphql-request'
   import { TeamAccessible } from '@/mixins'
+  import {
+    contractFragment,
+    transferFragment,
+    loanFragment,
+    injuryFragment,
+    playerFragment,
+    playerHistoryFragment,
+    playerPerformanceStatsFragment
+  } from '@/fragments'
 
   export default {
     name: 'PlayerPage',
     mixins: [
       TeamAccessible
     ],
-    middleware: [
-      'authenticated'
-    ],
-    transition: 'fade-transition',
     head: () => ({
       link: [
         { rel: 'stylesheet', href: '//cdn.jsdelivr.net/chartist.js/latest/chartist.min.css' }
@@ -202,7 +208,7 @@
     }),
     computed: {
       playerId () {
-        return this.$route.params.playerId
+        return parseInt(this.$route.params.playerId)
       },
       player () {
         return this.$store.$db().model('Player')
@@ -221,22 +227,56 @@
         }
       }
     },
-    async asyncData ({ store, params }) {
-      const data = await store.dispatch('players/analyze', {
-        teamId: params.teamId,
-        playerIds: [params.playerId]
+    async asyncData ({ store, params, $graphql }) {
+      const query = gql`
+        query fetchPlayerPage($teamId: ID!, $playerId: ID!) {
+          player(id: $playerId) {
+            ...PlayerData
+            contracts { ...ContractData }
+            transfers { ...TransferData }
+            loans { ...LoanData }
+            injuries { ...InjuryData }
+            histories { ...PlayerHistoryData }
+          }
+          team(id: $teamId) {
+            playerPerformanceStats(playerIds: [$playerId]) {
+              ...PlayerPerformanceStatsData
+            }
+          }
+        }
+        ${playerFragment}
+        ${contractFragment}
+        ${transferFragment}
+        ${loanFragment}
+        ${injuryFragment}
+        ${playerHistoryFragment}
+        ${playerPerformanceStatsFragment}
+      `
+
+      const { player, team: { playerPerformanceStats } } =
+        await $graphql.default.request(query, {
+          teamId: parseInt(params.teamId),
+          playerId: parseInt(params.playerId)
+        })
+
+      await store.$db().model('Player').insertOrUpdate({ data: player })
+
+      const data = {
+        numMatches: 0,
+        numCleanSheets: 0,
+        numGoals: 0,
+        numAssists: 0
+      }
+
+      playerPerformanceStats.forEach(stats => {
+        for (const stat in data) {
+          data[stat] += stats[stat]
+        }
       })
 
-      return {
-        numGames: data.num_games[params.playerId],
-        numCs: data.num_cs[params.playerId],
-        numGoals: data.num_goals[params.playerId],
-        numAssists: data.num_assists[params.playerId]
-      }
+      return data
     },
     async fetch () {
-      await this.getPlayer({ playerId: this.playerId })
-
       this.setPage({
         title: this.player.name,
         headline: this.player.name
@@ -247,15 +287,14 @@
         setPage: 'app/setPage',
         announce: 'broadcaster/announce'
       }),
-      ...mapActions({
-        getPlayer: 'players/get',
-        updatePlayer: 'players/update'
+      ...mapActions('players', {
+        updatePlayer: 'update'
       }),
       async updatePlayerAttribute (playerId, attribute, value) {
         try {
           await this.updatePlayer({
             id: playerId,
-            [attribute]: value
+            attributes: { [attribute]: value }
           })
         } catch (e) {
           this.key++

@@ -8,9 +8,9 @@
     :dense="dense"
   >
     <template #heading>
-      {{ event.started_on | formatDate }} - {{ event.ended_on | formatDate }}
+      {{ event.startedOn | formatDate }} - {{ event.endedOn | formatDate }}
       <span
-        v-if="event.conclusion && event.ended_on <= team.currently_on"
+        v-if="event.conclusion && event.endedOn <= team.currentlyOn"
         class="pl-1"
         v-text="`(${event.conclusion})`"
       />
@@ -25,20 +25,20 @@
       <tr>
         <td class="font-weight-bold">Signing Bonus</td>
         <td class="pl-1">
-          {{ event.signing_bonus | formatMoney(team.currency) }}
+          {{ event.signingBonus | formatMoney(team.currency) }}
         </td>
       </tr>
-      <tr v-if="event.performance_bonus">
+      <tr v-if="event.performanceBonus">
         <td class="font-weight-bold">Performance Bonus</td>
         <td class="pl-1">
-          {{ event.performance_bonus | formatMoney(team.currency) }}
-          if {{ event.bonus_req }} {{ event.bonus_req_type }}
+          {{ event.performanceBonus | formatMoney(team.currency) }}
+          if {{ event.bonusReq }} {{ event.bonusReqType }}
         </td>
       </tr>
-      <tr v-if="event.release_clause">
+      <tr v-if="event.releaseClause">
         <td class="font-weight-bold">Release Clause</td>
         <td class="pl-1">
-          {{ event.release_clause | formatMoney(team.currency) }}
+          {{ event.releaseClause | formatMoney(team.currency) }}
         </td>
       </tr>
     </template>

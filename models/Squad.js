@@ -9,14 +9,14 @@ export default class Squad extends Model {
     return {
       // Primary/Foreign keys
       id: this.number(0),
-      team_id: this.number(0),
+      teamId: this.number(0),
 
       // Database fields
       name: this.string(''),
 
       // Associations
-      squad_players: this.hasMany(SquadPlayer, 'squad_id'),
-      players: this.belongsToMany(Player, SquadPlayer, 'squad_id', 'player_id')
+      squadPlayers: this.hasMany(SquadPlayer, 'squadId'),
+      players: this.belongsToMany(Player, SquadPlayer, 'squadId', 'playerId')
     }
   }
 }

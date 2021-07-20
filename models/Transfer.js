@@ -8,25 +8,24 @@ export default class Transfer extends Model {
     return {
       // Primary/Foreign keys
       id: this.number(0),
-      player_id: this.number(0),
+      playerId: this.number(0),
 
       // Database fields
-      signed_on: this.string(''),
-      moved_on: this.string(''),
+      signedOn: this.string(''),
+      movedOn: this.string(''),
       origin: this.string(''),
       destination: this.string(''),
       fee: this.number(null).nullable(),
-      traded_player: this.string(null).nullable(),
-      addon_clause: this.number(null).nullable(),
-      loan: this.boolean(false),
+      tradedPlayer: this.string(null).nullable(),
+      addonClause: this.number(null).nullable(),
 
       // Associations
-      player: this.belongsTo(Player, 'player_id', 'id')
+      player: this.belongsTo(Player, 'playerId', 'id')
     }
   }
 
   get date () {
-    return this.moved_on
+    return this.movedOn
   }
 
   get type () {

@@ -13,7 +13,7 @@
       >
         <div class="player-pos font-weight-bold">{{ cap.pos }}</div>
         <div class="player-name">
-          <span class="hidden-sm-and-down">{{ cap.name }}</span>
+          <span class="hidden-sm-and-down">{{ player.name }}</span>
           <span class="hidden-md-and-up">{{ identifier }}</span>
         </div>
         <cap-events
@@ -25,7 +25,7 @@
     <v-card>
       <v-card-title class="text-subtitle-1 pa-2">
         <span class="mr-2">{{ cap.pos }}</span>
-        <span class="font-weight-light">{{ cap.name }}</span>
+        <span class="font-weight-light">{{ player.name }}</span>
         <v-spacer />
         <v-btn
           icon
@@ -94,14 +94,14 @@
     }),
     computed: {
       player () {
-        return this.$store.$db().model('Player').find(this.cap.player_id)
+        return this.$store.$db().model('Player').find(this.cap.playerId)
       },
       abbreviatedName () {
-        return this.cap.name.split(/\s+/).map(term => term[0]).join('')
+        return this.player.name.split(/\s+/).map(term => term[0]).join('')
       },
       identifier () {
-        return this.player && this.player.kit_no
-          ? `${this.abbreviatedName}${this.player.kit_no}`
+        return this.player && this.player.kitNo
+          ? `${this.abbreviatedName}${this.player.kitNo}`
           : this.abbreviatedName
       }
     }

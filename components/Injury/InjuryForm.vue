@@ -17,33 +17,33 @@
     </template>
     <template #form>
       <v-row
-        v-if="record && record.ended_on"
+        v-if="record && record.endedOn"
         dense
       >
         <v-col cols="12">
           <v-date-field
-            v-model="injury.started_on"
+            v-model="attributes.startedOn"
             label="Injury Date"
             prepend-icon="mdi-calendar-today"
             color="pink"
-            :max="contract && contract.ended_on"
+            :max="contract && contract.endedOn"
             required
           />
         </v-col>
         <v-col cols="12">
           <v-date-field
-            v-model="injury.ended_on"
+            v-model="attributes.endedOn"
             label="Recovery Date"
             prepend-icon="mdi-calendar"
             color="pink"
-            :min="contract && contract.started_on"
+            :min="contract && contract.startedOn"
             required
           />
         </v-col>
       </v-row>
       <v-col cols="12">
         <v-text-field
-          v-model="injury.description"
+          v-model="attributes.description"
           label="Description"
           prepend-icon="mdi-ambulance"
           :rules="rulesFor.description"
@@ -54,11 +54,11 @@
         />
       </v-col>
       <v-col
-        v-if="record && !record.ended_on"
+        v-if="record && !record.endedOn"
         cols="12"
       >
         <v-checkbox
-          v-model="injury.recovered"
+          v-model="attributes.recovered"
           label="Player Recovered"
           hide-details
         />
@@ -85,7 +85,7 @@
       dark: { type: Boolean, default: false }
     },
     data: () => ({
-      injury: {
+      attributes: {
         description: '',
         recovered: false
       },
@@ -101,10 +101,9 @@
     watch: {
       dialog (val) {
         if (val && this.record) {
-          this.injury = pick(this.record, [
-            'id',
-            'started_on',
-            'ended_on',
+          this.attributes = pick(this.record, [
+            'startedOn',
+            'endedOn',
             'description'
           ])
         }
@@ -117,11 +116,14 @@
       }),
       async submit () {
         if (this.record) {
-          await this.updateInjury(this.injury)
+          await this.updateInjury({
+            id: this.record.id,
+            attributes: this.attributes
+          })
         } else {
           await this.createInjury({
             playerId: this.player.id,
-            injury: this.injury
+            attributes: this.attributes
           })
         }
       }

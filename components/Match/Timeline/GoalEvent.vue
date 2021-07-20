@@ -11,18 +11,18 @@
         left
         v-text="'mdi-soccer'"
       />
-      {{ event.player_name }}
+      {{ event.playerName }}
       <span v-if="event.penalty">(P)</span>
-      <span v-else-if="event.own_goal">(OG)</span>
+      <span v-else-if="event.ownGoal">(OG)</span>
     </div>
-    <div v-if="event.assisted_by">
+    <div v-if="event.assistedBy">
       <v-icon
         color="light-blue accent-1"
         small
         left
         v-text="`mdi-human-greeting`"
       />
-      {{ event.assisted_by }}
+      {{ event.assistedBy }}
     </div>
   </base-match-event>
 </template>
@@ -37,7 +37,7 @@
     },
     computed: {
       color () {
-        return this.event.own_goal ? 'blue-grey' : 'blue'
+        return this.event.ownGoal ? 'blue-grey' : 'blue'
       }
     }
   }

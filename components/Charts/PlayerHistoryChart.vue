@@ -33,15 +33,15 @@
       lastContract () {
         return this.$store.$db().model('Contract')
           .query()
-          .orderBy('ended_on')
-          .where('player_id', this.player.id)
+          .orderBy('endedOn')
+          .where('playerId', this.player.id)
           .last()
       },
       lastDate () {
-        const contractEnd = this.lastContract && this.lastContract.ended_on
-        return contractEnd && this.team.currently_on >= contractEnd
+        const contractEnd = this.lastContract && this.lastContract.endedOn
+        return contractEnd && this.team.currentlyOn >= contractEnd
           ? contractEnd
-          : this.team.currently_on
+          : this.team.currentlyOn
       },
       chartData () {
         let series = []
@@ -49,7 +49,7 @@
         series.push({
           data: this.player.histories.reduce((data, history) => {
             data.splice(-1, 0, {
-              x: parseISO(history.recorded_on),
+              x: parseISO(history.recordedOn),
               y: history[this.attribute]
             })
             return data

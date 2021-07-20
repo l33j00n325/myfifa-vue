@@ -24,7 +24,7 @@
           <div class="subheading">Position</div>
         </v-col>
         <v-col cols="3">
-          <div class="text-h4">{{ player.sec_pos | listArray }}</div>
+          <div class="text-h4">{{ player.secPos | listArray }}</div>
           <div class="subheading">
             <fitty-text text="Secondary Position(s)" />
           </div>

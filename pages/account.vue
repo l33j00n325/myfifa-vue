@@ -22,10 +22,6 @@
 
   export default {
     name: 'AccountPage',
-    middleware: [
-      'authenticated'
-    ],
-    transition: 'fade-transition',
     fetch () {
       this.setPage({
         title: 'Account',

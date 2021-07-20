@@ -29,7 +29,7 @@
           {{ match.score }}
         </h4>
         <p class="font-weight-thin mt-0">
-          {{ match.played_on | formatDate }}
+          {{ match.playedOn | formatDate }}
         </p>
       </v-card-text>
     </template>

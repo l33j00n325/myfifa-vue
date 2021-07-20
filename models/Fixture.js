@@ -8,21 +8,14 @@ export default class Fixture extends Model {
     return {
       // Primary/Foreign keys
       id: this.number(0),
-      stage_id: this.number(0),
+      stageId: this.number(0),
 
       // Database fields
-      home_team: this.string('').nullable(),
-      away_team: this.string('').nullable(),
+      homeTeam: this.string('').nullable(),
+      awayTeam: this.string('').nullable(),
 
       // Associations
-      legs: this.hasMany(FixtureLeg, 'fixture_id', 'id')
+      legs: this.hasMany(FixtureLeg, 'fixtureId', 'id')
     }
   }
-
-  get score () {
-    return ''
-  }
-  // get score () {
-  //   return `${this.home_score || ''} - ${this.away_score || ''}`
-  // }
 }

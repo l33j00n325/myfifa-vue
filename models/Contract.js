@@ -8,27 +8,27 @@ export default class Contract extends Model {
     return {
       // Primary/Foreign keys
       id: this.number(0),
-      player_id: this.number(0),
+      playerId: this.number(0),
 
       // Database fields
-      signed_on: this.string(''),
+      signedOn: this.string(''),
       wage: this.number(null).nullable(),
-      signing_bonus: this.number(null).nullable(),
-      release_clause: this.number(null).nullable(),
-      performance_bonus: this.number(null).nullable(),
-      bonus_req: this.number(null).nullable(),
-      bonus_req_type: this.string(null).nullable(),
-      ended_on: this.string(''),
-      started_on: this.string(''),
+      signingBonus: this.number(null).nullable(),
+      releaseClause: this.number(null).nullable(),
+      performanceBonus: this.number(null).nullable(),
+      bonusReq: this.number(null).nullable(),
+      bonusReqType: this.string(null).nullable(),
+      endedOn: this.string(''),
+      startedOn: this.string(''),
       conclusion: this.string(null).nullable(),
 
       // Associations
-      player: this.belongsTo(Player, 'player_id', 'id')
+      player: this.belongsTo(Player, 'playerId', 'id')
     }
   }
 
   get date () {
-    return this.started_on
+    return this.startedOn
   }
 
   get type () {

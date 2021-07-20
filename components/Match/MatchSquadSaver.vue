@@ -66,8 +66,8 @@
       squads () {
         return this.$store.$db().model('Squad')
           .query()
-          .with('squad_players')
-          .where('team_id', this.team.id)
+          .with('squadPlayers')
+          .where('teamId', this.team.id)
           .get()
       },
       starters () {
@@ -86,17 +86,14 @@
           } else if (this.squadName) {
             this.loading = true
 
-            let squadPlayers = []
-
-            this.starters.forEach(cap => {
-              squadPlayers.push({ player_id: cap.player_id, pos: cap.pos })
-            })
-
             await this.createSquad({
               teamId: this.team.id,
-              squad: {
+              attributes: {
                 name: this.squadName,
-                squad_players_attributes: squadPlayers
+                squadPlayersAttributes: this.starters.map(cap => ({
+                  playerId: cap.playerId,
+                  pos: cap.pos
+                }))
               }
             })
           }

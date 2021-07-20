@@ -18,30 +18,30 @@
     <template #form>
       <v-col cols="12">
         <v-date-field
-          v-model="loan.started_on"
+          v-model="attributes.startedOn"
           label="Start Date"
           prepend-icon="mdi-calendar-today"
-          :min="record ? null : team.currently_on"
+          :min="record ? null : team.currentlyOn"
           color="indigo"
           required
         />
       </v-col>
       <v-col
-        v-if="record && record.ended_on"
+        v-if="record && record.endedOn"
         cols="12"
       >
         <v-date-field
-          v-model="loan.ended_on"
+          v-model="attributes.endedOn"
           label="Return Date"
           prepend-icon="mdi-calendar"
-          :min="loan.started_on"
+          :min="attributes.startedOn"
           color="indigo"
           required
         />
       </v-col>
       <v-col cols="12">
         <v-text-field
-          v-model="loan.origin"
+          v-model="attributes.origin"
           label="Origin"
           prepend-icon="mdi-airplane-takeoff"
           :rules="rulesFor.origin"
@@ -54,7 +54,7 @@
       </v-col>
       <v-col cols="12">
         <v-text-field
-          v-model="loan.destination"
+          v-model="attributes.destination"
           label="Destination"
           prepend-icon="mdi-airplane-landing"
           :rules="rulesFor.destination"
@@ -67,18 +67,18 @@
       </v-col>
       <v-col cols="12">
         <v-text-field
-          v-model="loan.wage_percentage"
+          v-model.number="attributes.wagePercentage"
           label="Wage Percentage (%)"
-          :rules="rulesFor.wage_percentage"
+          :rules="rulesFor.wagePercentage"
           inputmode="numeric"
         />
       </v-col>
       <v-col
-        v-if="record && !record.ended_on"
+        v-if="record && !record.endedOn"
         cols="12"
       >
         <v-checkbox
-          v-model="loan.returned"
+          v-model="attributes.returned"
           label="Player Returned"
           hide-details
         />
@@ -106,17 +106,17 @@
       dark: { type: Boolean, default: false }
     },
     data: () => ({
-      loan: {
-        started_on: '',
+      attributes: {
+        startedOn: '',
         origin: '',
         destination: '',
-        wage_percentage: null,
+        wagePercentage: null,
         returned: false
       },
       rulesFor: {
         origin: [isRequired('Origin')],
         destination: [isRequired('Destination')],
-        wage_percentage: [
+        wagePercentage: [
           isNumber('Wage Percentage'),
           inRange('Wage Percentage', [0, 100])
         ]
@@ -125,7 +125,7 @@
     computed: {
       loanOut () {
         return this.record
-          ? this.team.title === this.record.origin
+          ? this.team.name === this.record.origin
           : this.player.status && this.player.status.length > 0
       },
       title () {
@@ -136,20 +136,19 @@
       dialog (val) {
         if (val) {
           if (this.record) {
-            this.loan = pick(this.record, [
-              'id',
-              'started_on',
-              'ended_on',
+            this.attributes = pick(this.record, [
+              'startedOn',
+              'endedOn',
               'origin',
               'destination',
-              'wage_percentage'
+              'wagePercentage'
             ])
           } else {
-            this.loan.started_on = this.team.currently_on
+            this.attributes.startedOn = this.team.currentlyOn
             if (this.loanOut) {
-              this.loan.origin = this.team.title
+              this.attributes.origin = this.team.name
             } else {
-              this.loan.destination = this.team.title
+              this.attributes.destination = this.team.name
             }
           }
         }
@@ -162,11 +161,14 @@
       }),
       async submit () {
         if (this.record) {
-          await this.updateLoan(this.loan)
+          await this.updateLoan({
+            id: this.record.id,
+            attributes: this.attributes
+          })
         } else {
           await this.createLoan({
             playerId: this.player.id,
-            loan: this.loan
+            attributes: this.attributes
           })
         }
       }

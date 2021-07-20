@@ -69,7 +69,7 @@
         return this.$store.$db().model('Team').find(this.$route.params.teamId)
       },
       opponent () {
-        return this.team.title === this.match.home
+        return this.team.name === this.match.home
           ? this.match.away
           : this.match.home
       }

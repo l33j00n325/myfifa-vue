@@ -19,27 +19,29 @@
 </template>
 
 <script>
-  import { mapMutations, mapActions } from 'vuex'
+  import { mapMutations } from 'vuex'
+  import { gql } from 'nuxt-graphql-request'
+  import { teamFragment } from '@/fragments'
 
   export default {
     name: 'TeamsPage',
-    middleware: [
-      'authenticated'
-    ],
-    transition: 'fade-transition',
     async fetch () {
       this.setPage({
         headline: 'Teams'
       })
-      await this.fetchTeams()
+
+      const query = gql`
+        query fetchTeams {
+          teams { ...TeamData }
+        }
+        ${teamFragment}
+      `
+
+      const { teams } = await this.$graphql.default.request(query)
+      await this.$store.$db().model('Team').insert({ data: teams })
     },
-    methods: {
-      ...mapMutations('app', {
-        setPage: 'setPage'
-      }),
-      ...mapActions('teams', {
-        fetchTeams: 'fetch'
-      })
-    }
+    methods: mapMutations('app', {
+      setPage: 'setPage'
+    })
   }
 </script>

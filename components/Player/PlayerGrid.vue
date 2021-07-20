@@ -1,60 +1,37 @@
 <template>
   <v-card>
     <v-toolbar flat>
-      <!-- Display Menu -->
-      <v-tooltip
-        bottom
-        :color="currentFilter.color"
-      >
-        <template #activator="{ on: tooltip }">
-          <v-menu
-            bottom
-            right
+      <v-menu>
+        <template #activator="{ on }">
+          <v-btn
+            class="px-3"
+            text
+            v-on="on"
           >
-            <template #activator="{ on: menu }">
-              <v-btn
-                class="px-1"
-                text
-                v-on="{ ...menu, ...tooltip }"
-              >
-                <v-icon :color="currentFilter.color">
-                  mdi-{{ currentFilter.icon }}
-                </v-icon>
-              </v-btn>
-            </template>
-            <v-list>
-              <v-list-item
-                v-for="(opt, i) in filters"
-                :key="i"
-                @click="filter = i"
-              >
-                <v-list-item-avatar>
-                  <v-icon :color="opt.color">mdi-{{ opt.icon }}</v-icon>
-                </v-list-item-avatar>
-                <v-list-item-title>{{ opt.text }}</v-list-item-title>
-              </v-list-item>
-            </v-list>
-          </v-menu>
+            <v-icon
+              left
+              :color="currentFilter.color"
+              v-text="`mdi-${currentFilter.icon}`"
+            />
+            <div
+              :class="`text-capitalize ${currentFilter.color}--text`"
+              v-text="`${currentFilter.text} Players`"
+            />
+          </v-btn>
         </template>
-        Display {{ currentFilter.text }} Players
-      </v-tooltip>
-      <v-btn-toggle
-        v-model="mode"
-        mandatory
-        rounded
-        class="mx-3"
-      >
-        <v-btn
-          v-for="(opt, i) in modes"
-          :key="i"
-          text
-        >
-          <v-icon :color="opt.color">mdi-{{ opt.icon }}</v-icon>
-        </v-btn>
-      </v-btn-toggle>
-      <div :class="`hidden-sm-and-down subheading ${currentMode.color}--text`">
-        {{ currentMode.text }}
-      </div>
+        <v-list>
+          <v-list-item
+            v-for="(opt, i) in filters"
+            :key="i"
+            @click="filter = i"
+          >
+            <v-list-item-avatar>
+              <v-icon :color="opt.color">mdi-{{ opt.icon }}</v-icon>
+            </v-list-item-avatar>
+            <v-list-item-title>{{ opt.text }}</v-list-item-title>
+          </v-list-item>
+        </v-list>
+      </v-menu>
       <v-spacer />
       <v-text-field
         v-model="search"
@@ -77,67 +54,76 @@
           :search="search"
           item-key="id"
           no-data-text="No Players Found"
+          :mobile-breakpoint="0"
         >
-          <template #item.name="{ item }">
-            <v-btn
-              :to="item.link"
-              small
-              text
-              nuxt
-              color="info"
-              class="text-capitalize"
-            >
-              <flag
-                v-if="item.flag"
-                :iso="item.flag"
-                :title="item.nationality"
-                class="mr-2"
-              />
-              {{ item.name }}
-            </v-btn>
-          </template>
-          <template #item.kit_no="{ item }">
-            <inline-select
-              :item="item"
-              attribute="kit_no"
-              label="Kit No"
-              :options="Array.from({ length: 98 }, (v, k) => k + 1)"
-              dense
-              @change="updatePlayerAttribute(item.id, 'kit_no', $event)"
-            />
-          </template>
-          <template #item.ovr="{ item }">
-            <inline-select
-              :item="item"
-              attribute="ovr"
-              label="OVR"
-              :options="Array.from({ length: 61 }, (v, k) => k + 40)"
-              dense
-              @change="updatePlayerAttribute(item.id, 'ovr', $event)"
-            />
-          </template>
-          <template #item.value="{ item }">
-            <inline-field
-              :item="item"
-              attribute="value"
-              label="Value"
-              input-type="money"
-              :display="item.value | formatMoney(team.currency)"
-              required
-              @close="updatePlayerAttribute(item.id, 'value', $event)"
-            />
-          </template>
-          <template #item.status="{ item }">
-            <v-icon :color="item.statusColor">mdi-{{ item.statusIcon }}</v-icon>
-          </template>
-          <template #item.sec_pos="{ item }">
-            {{ item.sec_pos | listArray('-') }}
-          </template>
-          <template #item.wage="{ item }">
-            {{ item.wage | formatMoney(team.currency, '-') }}
-          </template>
-          <template #item.endDate="{ item }">
-            {{ item.endDate | formatDate('MMM dd, yyyy', '-') }}
+          <template #item="{ item }">
+            <tr>
+              <td class="stick-left">
+                <v-btn
+                  :to="item.link"
+                  small
+                  text
+                  nuxt
+                  color="info"
+                  class="text-capitalize"
+                  v-text="item.name"
+                />
+              </td>
+              <td class="text-center">
+                <flag
+                  v-if="item.flag"
+                  :iso="item.flag"
+                  :title="item.nationality"
+                  class="mr-2"
+                />
+              </td>
+              <td class="text-center">
+                <v-icon
+                  :color="item.statusColor"
+                  v-text="`mdi-${item.statusIcon}`"
+                />
+              </td>
+              <td class="text-center">{{ item.age }}</td>
+              <td class="text-center">{{ item.pos }}</td>
+              <td class="text-center">{{ item.secPos | listArray(' ') }}</td>
+              <td class="text-center">
+                <inline-select
+                  :item="item"
+                  attribute="kitNo"
+                  label="Kit No"
+                  :options="Array.from({ length: 98 }, (v, k) => k + 1)"
+                  dense
+                  @change="updatePlayerAttribute(item.id, 'kitNo', $event)"
+                />
+              </td>
+              <td class="text-center">
+                <inline-select
+                  :item="item"
+                  attribute="ovr"
+                  label="OVR"
+                  :options="Array.from({ length: 61 }, (v, k) => k + 40)"
+                  dense
+                  @change="updatePlayerAttribute(item.id, 'ovr', $event)"
+                />
+              </td>
+              <td class="text-right">
+                <inline-field
+                  :item="item"
+                  attribute="value"
+                  label="Value"
+                  input-type="money"
+                  :display="item.value | formatMoney(team.currency)"
+                  required
+                  @close="updatePlayerAttribute(item.id, 'value', $event)"
+                />
+              </td>
+              <td class="text-right">
+                {{ item.wage | formatMoney(team.currency, '-') }}
+              </td>
+              <td class="text-right">
+                {{ item.endDate | formatDate('MMM dd, yyyy', '-') }}
+              </td>
+            </tr>
           </template>
         </v-data-table>
       </client-only>
@@ -150,6 +136,10 @@
   import { TeamAccessible } from '@/mixins'
   import { positions } from '@/constants'
 
+  function sortPos (posA, posB) {
+    return positions.indexOf(posA) - positions.indexOf(posB)
+  }
+
   export default {
     name: 'PlayerGrid',
     mixins: [
@@ -157,12 +147,18 @@
     ],
     data: () => ({
       key: 0,
-      mode: 0,
-      modes: [
-        { text: 'Overall', color: 'green', icon: 'trending-up' },
-        { text: 'Edit', color: 'orange', icon: 'pencil' },
-        { text: 'Contract', color: 'blue', icon: 'file-document-outline' },
-        { text: 'Statistics', color: 'red', icon: 'numeric' }
+      headers: [
+        { text: 'Name', value: 'name', width: 200, class: 'stick-left' },
+        { text: 'Nationality', value: 'nationality', align: 'center', width: 120 },
+        { text: 'Status', value: 'status', align: 'center', width: 100 },
+        { text: 'Age', value: 'age', align: 'center', width: 100 },
+        { text: 'Pos', value: 'pos', align: 'center', width: 100, sort: sortPos },
+        { text: '2nd Pos', value: 'secPos', sortable: false, align: 'center', width: 100 },
+        { text: 'Kit No', value: 'kitNo', align: 'center', width: 100 },
+        { text: 'OVR', value: 'ovr', align: 'center', width: 80 },
+        { text: 'Value', value: 'value', align: 'end', width: 100, class: 'text-right' },
+        { text: 'Wage', value: 'wage', align: 'end', width: 100, class: 'text-right' },
+        { text: 'Contracts Ends', value: 'endDate', align: 'end', width: 120, class: 'text-right' }
       ],
       filter: 2,
       filters: [
@@ -174,68 +170,18 @@
         { text: 'Pending', color: 'deep-orange', icon: 'lock-clock' }
       ],
       search: '',
-      loading: false,
-      stats: {
-        num_games: {},
-        num_goals: {},
-        num_assists: {},
-        num_cs: {}
-      }
+      loading: false
     }),
     computed: {
       players () {
         return this.$store.$db().model('Player')
           .query()
           .with('team|contracts')
-          .where('team_id', parseInt(this.$route.params.teamId))
+          .where('teamId', parseInt(this.$route.params.teamId))
           .get()
-      },
-      currentMode () {
-        return this.modes[this.mode]
       },
       currentFilter () {
         return this.filters[this.filter]
-      },
-      headers () {
-        let headers = [
-          { text: 'Name', value: 'name' },
-          { text: 'Status', value: 'status', align: 'center', sortable: false, width: 40 },
-          { text: 'Age', value: 'age', align: 'center' },
-          { text: 'Position', value: 'pos', align: 'center', sort: this.sortPos },
-          { text: 'Kit No', value: 'kit_no', align: 'center' }
-        ]
-
-        switch (this.mode) {
-          case 0: // Overall
-            return headers.concat([
-              { text: '2nd Position(s)', value: 'sec_pos', sortable: false, align: 'center' },
-              { text: 'OVR', value: 'ovr', align: 'center' },
-              { text: 'Value', value: 'value', align: 'end' }
-            ])
-          case 1: // Edit
-            return [
-              { text: 'Name', value: 'name' },
-              { text: 'Position', value: 'pos', align: 'center', sort: this.sortPos },
-              { text: 'Kit No', value: 'kit_no', align: 'center' },
-              { text: 'OVR', value: 'ovr', align: 'center' },
-              { text: 'Value', value: 'value', align: 'end' }
-            ]
-          case 2: // Contract
-            return headers.concat([
-              { text: 'Value', value: 'value', align: 'end' },
-              { text: 'Wage', value: 'wage', align: 'end' },
-              { text: 'End Date', value: 'endDate', align: 'end' }
-            ])
-          case 3: // Statistics
-            return headers.concat([
-              { text: 'Games Played', value: 'numGames', align: 'center' },
-              { text: 'Goals', value: 'numGoals', align: 'center' },
-              { text: 'Assists', value: 'numAssists', align: 'center' },
-              { text: 'Clean Sheets', value: 'numCs', align: 'center' }
-            ])
-          default:
-            return headers
-        }
       },
       rows () {
         return this.players
@@ -244,7 +190,7 @@
               case 0: // All
                 return true
               case 1: // Youth
-                return player.youth && player.contracts.length === 0
+                return player.youth
               case 2: // Active
                 return player.status && player.status !== 'Pending'
               case 3: // Injured
@@ -255,12 +201,6 @@
           })
           .map(player => {
             const contract = player.contract()
-
-            const numGames = this.stats.num_games[player.id] || 0
-            const numGoals = this.stats.num_goals[player.id] || 0
-            const numAssists = this.stats.num_assists[player.id] || 0
-            const numCs = this.stats.num_cs[player.id] || 0
-
             return {
               ...player,
               flag: player.flag,
@@ -269,19 +209,9 @@
               statusColor: player.statusColor,
 
               wage: contract.wage,
-              endDate: contract.ended_on,
-
-              numGames,
-              numGoals,
-              numAssists,
-              numCs
+              endDate: contract.endedOn
             }
           })
-      }
-    },
-    watch: {
-      mode (val) {
-        val === 3 && this.getPlayerStats()
       }
     },
     methods: {
@@ -289,24 +219,8 @@
         'announce'
       ]),
       ...mapActions('players', {
-        updatePlayer: 'update',
-        analyzePlayers: 'analyze'
+        updatePlayer: 'update'
       }),
-      async getPlayerStats () {
-        try {
-          this.loading = true
-          const data = await this.analyzePlayers({
-            teamId: this.team.id,
-            playerIds: this.players.map(player => player.id)
-          })
-
-          this.stats = data
-        } catch (e) {
-          console.error(e)
-        } finally {
-          this.loading = false
-        }
-      },
       async updatePlayerAttribute (playerId, attribute, value) {
         try {
           await this.updatePlayer({
@@ -320,9 +234,6 @@
             color: 'red'
           })
         }
-      },
-      sortPos (posA, posB) {
-        return positions.indexOf(posA) - positions.indexOf(posB)
       }
     }
   }

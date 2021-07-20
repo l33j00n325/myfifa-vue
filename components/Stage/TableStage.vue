@@ -28,7 +28,7 @@
       :headers="headers"
       :items="items"
       :mobile-breakpoint="0"
-      :sort-by="['points', 'goal_difference', 'goals_for', 'goals_against']"
+      :sort-by="['points', 'goalDifference', 'goalsFor', 'goalsAgainst']"
       :sort-desc="[true, true, true, true]"
       multi-sort
       :items-per-page="-1"
@@ -46,14 +46,14 @@
       <template #item.losses="{ item }">
         <span :class="teamClass(item.name)">{{ item.losses }}</span>
       </template>
-      <template #item.goals_for="{ item }">
-        <span :class="teamClass(item.name)">{{ item.goals_for }}</span>
+      <template #item.goalsFor="{ item }">
+        <span :class="teamClass(item.name)">{{ item.goalsFor }}</span>
       </template>
-      <template #item.goals_against="{ item }">
-        <span :class="teamClass(item.name)">{{ item.goals_against }}</span>
+      <template #item.goalsAgainst="{ item }">
+        <span :class="teamClass(item.name)">{{ item.goalsAgainst }}</span>
       </template>
-      <template #item.goal_difference="{ item }">
-        <span :class="teamClass(item.name)">{{ item.goal_difference }}</span>
+      <template #item.goalDifference="{ item }">
+        <span :class="teamClass(item.name)">{{ item.goalDifference }}</span>
       </template>
       <template #item.points="{ item }">
         <span :class="teamClass(item.name)">{{ item.points }}</span>
@@ -105,7 +105,7 @@
     }),
     computed: {
       items () {
-        return Object.values(this.table.table_rows || {})
+        return Object.values(this.table.tableRows || {})
       },
       headers () {
         const headers = [
@@ -113,9 +113,9 @@
           { text: 'W', value: 'wins', align: 'center' },
           { text: 'D', value: 'draws', align: 'center' },
           { text: 'L', value: 'losses', align: 'center' },
-          { text: 'GF', value: 'goals_for', align: 'center' },
-          { text: 'GA', value: 'goals_against', align: 'center' },
-          { text: 'GD', value: 'goal_difference', align: 'center' },
+          { text: 'GF', value: 'goalsFor', align: 'center' },
+          { text: 'GA', value: 'goalsAgainst', align: 'center' },
+          { text: 'GD', value: 'goalDifference', align: 'center' },
           { text: 'PTS', value: 'points', align: 'center' }
         ]
 
@@ -148,7 +148,7 @@
         try {
           await this.updateStage({
             id: stageId,
-            [attribute]: value
+            attributes: { [attribute]: value }
           })
         } catch (e) {
           this.key++

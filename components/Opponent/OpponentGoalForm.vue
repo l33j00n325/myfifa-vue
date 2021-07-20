@@ -1,26 +1,29 @@
 <template>
-  <base-form :submit="saveGoal">
+  <base-form
+    :submit="saveGoal"
+    @reset="resetAttributes"
+  >
     <template #default="{ valid, loading }">
       <div class="pa-2">
         <div class="text-subtitle-2 pb-2">
           Add Goal
         </div>
-        <minute-field v-model="minute" />
+        <minute-field v-model.number="minute" />
         <v-text-field
-          v-model="goal.player_name"
+          v-model="attributes.playerName"
           label="Goal Scorer"
           prepend-icon="mdi-account"
-          :rules="rules.player_name"
+          :rules="rules.playerName"
           spellcheck="false"
           autocapitalize="words"
           autocomplete="off"
           autocorrect="off"
         />
         <v-text-field
-          v-model="goal.assisted_by"
+          v-model="attributes.assistedBy"
           label="Assisted By"
           prepend-icon="mdi-human-greeting"
-          :disabled="goal.penalty || goal.own_goal"
+          :disabled="attributes.penalty || attributes.ownGoal"
           hide-details
           spellcheck="false"
           autocapitalize="words"
@@ -28,16 +31,16 @@
           autocorrect="off"
         />
         <v-checkbox
-          v-model="goal.penalty"
+          v-model="attributes.penalty"
           label="Penalty"
-          :disabled="goal.own_goal"
+          :disabled="attributes.ownGoal"
           hide-details
           @change="clearAssistedBy"
         />
         <v-checkbox
-          v-model="goal.own_goal"
+          v-model="attributes.ownGoal"
           label="Own Goal"
-          :disabled="goal.penalty"
+          :disabled="attributes.penalty"
           hide-details
           @change="clearAssistedBy"
         />
@@ -70,18 +73,18 @@
       MatchAccessible
     ],
     data: () => ({
-      goal: {
+      attributes: {
         home: true,
-        player_name: '',
-        assisted_by: '',
-        own_goal: false,
+        playerName: '',
+        assistedBy: '',
+        ownGoal: false,
         penalty: false
       }
     }),
     computed: {
       rules () {
         return {
-          player_name: [isRequired('Goal Scorer')]
+          playerName: [isRequired('Goal Scorer')]
         }
       }
     },
@@ -89,7 +92,7 @@
       'match.home': {
         immediate: true,
         handler (home) {
-          this.goal.home = home !== this.team.title
+          this.attributes.home = home !== this.team.name
         }
       }
     },
@@ -99,18 +102,22 @@
       }),
       clearAssistedBy (bool) {
         if (bool) {
-          this.goal.assisted_by = null
+          this.attributes.assistedBy = null
         }
       },
       async saveGoal () {
         await this.createGoal({
           matchId: this.match.id,
-          goal: {
-            ...this.goal,
+          attributes: {
+            ...this.attributes,
             minute: this.minute
           }
         })
         this.$emit('submitted')
+      },
+      resetAttributes () {
+        this.attributes.ownGoal = false
+        this.attributes.penalty = false
       }
     }
   }

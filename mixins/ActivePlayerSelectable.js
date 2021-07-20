@@ -6,10 +6,10 @@ export default {
       return orderBy(
         this.$store.$db().model('Player')
           .query()
-          .where('team_id', parseInt(this.$route.params.teamId))
+          .where('teamId', parseInt(this.$route.params.teamId))
           .where('status', status => status)
           .get(),
-        ['pos_idx', 'ovr'],
+        ['posIdx', 'ovr'],
         ['asc', 'desc']
       ).filter(player => player.status === 'Active')
     }

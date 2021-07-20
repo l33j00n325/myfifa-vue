@@ -45,13 +45,13 @@
       injury () {
         return this.$store.$db().model('Injury')
           .query()
-          .where('player_id', this.player.id)
+          .where('playerId', this.player.id)
           .last()
       },
       loan () {
         return this.$store.$db().model('Loan')
           .query()
-          .where('player_id', this.player.id)
+          .where('playerId', this.player.id)
           .last()
       }
     }

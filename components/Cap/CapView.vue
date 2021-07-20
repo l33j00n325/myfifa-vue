@@ -7,10 +7,10 @@
           class="player-name"
           v-on="on"
         >
-          {{ cap.name }}
+          {{ player.name }}
         </a>
       </template>
-      <player-card :player-id="cap.player_id" />
+      <player-card :player-id="cap.playerId" />
     </v-dialog>
     <cap-events
       :cap="cap"
@@ -25,6 +25,11 @@
     props: {
       cap: { type: Object, required: true },
       match: { type: Object, required: true }
+    },
+    computed: {
+      player () {
+        return this.$store.$db().model('Player').find(this.cap.playerId)
+      }
     }
   }
 </script>

@@ -1,19 +1,55 @@
+import { gql } from 'nuxt-graphql-request'
+
 // actions
 export const actions = {
-  async create (_, { playerId, injury }) {
-    const data = await this.$axios.$post(`players/${playerId}/injuries`, {
-      injury
-    })
-    this.$db().model('Injury').insert({ data })
+  async create (_, { playerId, attributes }) {
+    const query = gql`
+      mutation createInjury($playerId: ID!, $attributes: InjuryAttributes!) {
+        addInjury(playerId: $playerId, attributes: $attributes) {
+          errors { fullMessages }
+        }
+      }
+    `
+
+    const { addInjury: { errors } } =
+      await this.$graphql.default.request(query, { playerId, attributes })
+
+    if (errors) {
+      throw new Error(errors.fullMessages[0])
+    }
   },
-  async update (_, injury) {
-    const data = await this.$axios.$patch(`injuries/${injury.id}`, {
-      injury
-    })
-    this.$db().model('Injury').insert({ data })
+  async update (_, { id, attributes }) {
+    const query = gql`
+      mutation ($id: ID!, $attributes: InjuryAttributes!) {
+        updateInjury(id: $id, attributes: $attributes) {
+          errors { fullMessages }
+        }
+      }
+    `
+
+    const { updateInjury: { errors } } =
+      await this.$graphql.default.request(query, { id, attributes })
+
+    if (errors) {
+      throw new Error(errors.fullMessages[0])
+    }
   },
-  async remove (_, injuryId) {
-    await this.$axios.$delete(`injuries/${injuryId}`)
-    this.$db().model('Injury').delete(injuryId)
+  async remove (_, id) {
+    const query = gql`
+      mutation removeInjury($id: ID!) {
+        removeInjury(id: $id) {
+          errors { fullMessages }
+        }
+      }
+    `
+
+    const { removeInjury: { errors } } =
+      await this.$graphql.default.request(query, { id })
+
+    if (errors) {
+      throw new Error(errors.fullMessages[0])
+    } else {
+      this.$db().model('Injury').delete(id)
+    }
   }
 }

@@ -67,7 +67,7 @@
       },
       minute () {
         if (this.event.type === 'penalty-shootout') {
-          return this.match.extra_time ? 120 : 90
+          return this.match.extraTime ? 120 : 90
         } else {
           return this.event.minute
         }
@@ -80,7 +80,7 @@
       store () {
         return this.event.type === 'penalty-shootout'
           ? 'penaltyShootout'
-          : this.event.type
+          : `${this.event.type}s`
       }
     }
   }

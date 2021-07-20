@@ -18,7 +18,7 @@
     <template #form>
       <v-col cols="12">
         <v-date-field
-          v-model="contract.started_on"
+          v-model="attributes.startedOn"
           label="Effective Date"
           prepend-icon="mdi-calendar-today"
           required
@@ -26,10 +26,10 @@
       </v-col>
       <v-col cols="12">
         <v-date-field
-          v-model="contract.ended_on"
+          v-model="attributes.endedOn"
           label="End Date"
           prepend-icon="mdi-calendar"
-          :min="contract.started_on"
+          :min="attributes.startedOn"
           :max="maxEndDate"
           required
           start-with-year
@@ -37,7 +37,7 @@
       </v-col>
       <v-col cols="12">
         <v-money-field
-          v-model="contract.wage"
+          v-model.number="attributes.wage"
           label="Wage"
           :prefix="team.currency"
           required
@@ -45,45 +45,45 @@
       </v-col>
       <v-col cols="12">
         <v-money-field
-          v-model="contract.signing_bonus"
+          v-model.number="attributes.signingBonus"
           label="Signing Bonus"
           :prefix="team.currency"
         />
       </v-col>
       <v-col cols="12">
         <v-money-field
-          v-model="contract.release_clause"
+          v-model.number="attributes.releaseClause"
           label="Release Clause"
           :prefix="team.currency"
         />
       </v-col>
       <v-col cols="12">
         <v-money-field
-          v-model="contract.performance_bonus"
+          v-model.number="attributes.performanceBonus"
           label="Performance Bonus"
           :prefix="team.currency"
         />
       </v-col>
       <v-scroll-y-transition mode="out-in">
         <v-row
-          v-if="contract.performance_bonus"
+          v-if="attributes.performanceBonus"
           dense
         >
           <v-col cols="6">
             <v-text-field
-              v-model="contract.bonus_req"
+              v-model.number="attributes.bonusReq"
               label="Bonus Req."
               prefix="if"
-              :rules="rulesFor.bonus_req"
+              :rules="rulesFor.bonusReq"
               inputmode="numeric"
             />
           </v-col>
           <v-col cols="6">
             <v-select
-              v-model="contract.bonus_req_type"
+              v-model="attributes.bonusReqType"
               label="Bonus Req. Type"
               :items="bonusRequirementTypes"
-              :rules="rulesFor.bonus_req_type"
+              :rules="rulesFor.bonusReqType"
             />
           </v-col>
         </v-row>
@@ -113,19 +113,19 @@
     },
     data: () => ({
       valid: false,
-      contract: {
-        started_on: null,
-        ended_on: null,
+      attributes: {
+        startedOn: null,
+        endedOn: null,
         wage: null,
-        signing_bonus: null,
-        release_clause: null,
-        performance_bonus: null,
-        bonus_req: null,
-        bonus_req_type: null
+        signingBonus: null,
+        releaseClause: null,
+        performanceBonus: null,
+        bonusReq: null,
+        bonusReqType: null
       },
       rulesFor: {
-        bonus_req: [isRequired('Bonus Req.')],
-        bonus_req_type: [isRequired('Bonus Req. Type')]
+        bonusReq: [isRequired('Bonus Req.')],
+        bonusReqType: [isRequired('Bonus Req. Type')]
       },
       bonusRequirementTypes: [
         'Appearances',
@@ -139,8 +139,8 @@
         return this.record ? 'Edit Contract' : 'Sign New Contract'
       },
       maxEndDate () {
-        return this.contract.started_on && format(
-          addYears(parseISO(this.contract.started_on), 6),
+        return this.attributes.startedOn && format(
+          addYears(parseISO(this.attributes.startedOn), 6),
           'yyyy-MM-dd'
         )
       }
@@ -149,26 +149,31 @@
       dialog (val) {
         if (val) {
           if (this.record) {
-            this.contract = pick(this.record, [
-              'id',
-              'started_on',
-              'ended_on',
+            this.attributes = pick(this.record, [
+              'startedOn',
+              'endedOn',
               'wage',
-              'signing_bonus',
-              'release_clause',
-              'performance_bonus',
-              'bonus_req',
-              'bonus_req_type'
+              'signingBonus',
+              'releaseClause',
+              'performanceBonus',
+              'bonusReq',
+              'bonusReqType'
             ])
           } else {
-            this.contract.started_on = this.team.currently_on
-            this.contract.ended_on = this.team.currently_on
+            this.attributes.startedOn = this.team.currentlyOn
+            this.attributes.endedOn = this.team.currentlyOn
           }
         }
       },
-      'contract.started_on' (val) {
-        if (val && this.contract.ended_on && this.contract.ended_on < val) {
-          this.contract.ended_on = val
+      'attributes.startedOn' (val) {
+        if (val && this.attributes?.endedOn < val) {
+          this.attributes.endedOn = val
+        }
+      },
+      'attributes.performanceBonus' (val) {
+        if (!val) {
+          this.attributes.bonusReq = null
+          this.attributes.bonusReqType = null
         }
       }
     },
@@ -179,11 +184,14 @@
       }),
       async submit () {
         if (this.record) {
-          await this.updateContract(this.contract)
+          await this.updateContract({
+            id: this.record.id,
+            attributes: this.attributes
+          })
         } else {
           await this.createContract({
             playerId: this.player.id,
-            contract: this.contract
+            attributes: this.attributes
           })
         }
       }

@@ -9,12 +9,12 @@ export default {
       return this.$store.$db().model('Team').find(this.teamId)
     },
     season () {
-      const date = parseISO(this.team.started_on)
-      const currentDate = parseISO(this.team.currently_on)
+      const date = parseISO(this.team.startedOn)
+      const currentDate = parseISO(this.team.currentlyOn)
       return differenceInYears(currentDate, date)
     },
     seasonStart () {
-      const date = parseISO(this.team.started_on)
+      const date = parseISO(this.team.startedOn)
       return format(addYears(date, this.season), 'yyyy-MM-dd')
     },
     seasonEnd () {
@@ -24,7 +24,7 @@ export default {
   },
   methods: {
     seasonLabel (season) {
-      const start = addYears(parseISO(this.team.started_on), season)
+      const start = addYears(parseISO(this.team.startedOn), season)
       const end = addYears(start, 1)
       return `${format(start, 'yyyy')} - ${format(end, 'yyyy')}`
     },

@@ -3,6 +3,7 @@
     :close-on-content-click="false"
     offset-y
     offset-overflow
+    bottom
   >
     <template #activator="{ on }">
       <v-btn v-on="on">

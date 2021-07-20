@@ -34,7 +34,7 @@
       players: { type: Array, default: () => [] },
       label: { type: String, default: 'Player' },
       icon: { type: String, default: 'mdi-account' },
-      itemValue: { type: String, default: 'player_id' },
+      itemValue: { type: String, default: 'playerId' },
       required: { type: Boolean, default: false },
       disabled: { type: Boolean, default: false },
       clearable: { type: Boolean, default: false },

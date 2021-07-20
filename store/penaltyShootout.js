@@ -1,23 +1,39 @@
+import { gql } from 'nuxt-graphql-request'
+
 // actions
 export const actions = {
-  async create (_, { matchId, penaltyShootout }) {
-    const data = await this.$axios.$post(
-      `matches/${matchId}/penalty_shootout`,
-      { penalty_shootout: penaltyShootout }
-    )
-    this.$db().model('PenaltyShootout').insert({ data })
-  },
-  async update (_, { matchId, penaltyShootout }) {
-    const data = await this.$axios.$patch(
-      `matches/${matchId}/penalty_shootout`,
-      { penalty_shootout: penaltyShootout }
-    )
-    this.$db().model('PenaltyShootout').insert({ data })
+  async save (_, { matchId, attributes }) {
+    const query = gql`
+      mutation savePenaltyShootout($matchId: ID!, $attributes: PenaltyShootoutAttributes!) {
+        updateMatch(id: $matchId, attributes: { penaltyShootoutAttributes: $attributes }) {
+          errors { fullMessages }
+        }
+      }
+    `
+
+    const { updateMatch: { errors } } =
+      await this.$graphql.default.request(query, { matchId, attributes })
+
+    if (errors) {
+      throw new Error(errors.fullMessages[0])
+    }
   },
   async remove (_, id) {
-    const penaltyShootout = this.$db().model('PenaltyShootout')
-    const { match_id: matchId } = penaltyShootout.find(id)
-    await this.$axios.$delete(`matches/${matchId}/penalty_shootout`)
-    penaltyShootout.delete(id)
+    const query = gql`
+      mutation removePenaltyShootout($id: ID!) {
+        removePenaltyShootout(id: $id) {
+          errors { fullMessages }
+        }
+      }
+    `
+
+    const { removePenaltyShootout: { errors } } =
+      await this.$graphql.default.request(query, { id })
+
+    if (errors) {
+      throw new Error(errors.fullMessages[0])
+    } else {
+      this.$db().model('PenaltyShootout').delete(id)
+    }
   }
 }

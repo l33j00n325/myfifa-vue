@@ -58,12 +58,12 @@
         return this.$store.$db().model('Competition')
           .query()
           .with('team')
-          .where('team_id', this.team.id)
+          .where('teamId', this.team.id)
           .where('season', this.season)
           .get()
       },
       seasonLabel () {
-        let start = addYears(parseISO(this.team.started_on), this.season)
+        let start = addYears(parseISO(this.team.startedOn), this.season)
         const end = addYears(start, 1)
         return `${format(start, 'yyyy')} - ${format(end, 'yyyy')}`
       },

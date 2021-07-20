@@ -1,5 +1,5 @@
 import { Model } from '@vuex-orm/core'
-import { nationalities } from '@/constants'
+import { nationalities, positions } from '@/constants'
 import PlayerHistory from './PlayerHistory'
 import Injury from './Injury'
 import Loan from './Loan'
@@ -18,36 +18,34 @@ export default class Player extends Model {
     return {
       // Primary/Foreign keys
       id: this.number(0),
-      team_id: this.number(0),
+      teamId: this.number(0),
 
       // Database fields
       name: this.string(''),
       nationality: this.string('').nullable(),
       pos: this.string(''),
-      sec_pos: this.attr([]),
+      secPos: this.attr([]),
       ovr: this.number(60),
       value: this.number(null).nullable(),
-      birth_year: this.number(null).nullable(),
       status: this.string(null).nullable(),
       youth: this.boolean(false),
-      kit_no: this.number(null).nullable(),
+      kitNo: this.number(null).nullable(),
 
       // Calculated fields
       age: this.number(16),
-      pos_idx: this.number(0),
 
       // Associations
-      team: this.belongsTo(Team, 'team_id'),
-      histories: this.hasMany(PlayerHistory, 'player_id'),
-      injuries: this.hasMany(Injury, 'player_id'),
-      loans: this.hasMany(Loan, 'player_id'),
-      contracts: this.hasMany(Contract, 'player_id'),
-      transfers: this.hasMany(Transfer, 'player_id'),
-      caps: this.hasMany(Cap, 'player_id'),
-      matches: this.belongsToMany(Match, Cap, 'player_id', 'match_id'),
-      goals: this.hasMany(Goal, 'player_id'),
-      assists: this.hasMany(Goal, 'assist_id'),
-      bookings: this.hasMany(Booking, 'player_id')
+      team: this.belongsTo(Team, 'teamId'),
+      histories: this.hasMany(PlayerHistory, 'playerId'),
+      injuries: this.hasMany(Injury, 'playerId'),
+      loans: this.hasMany(Loan, 'playerId'),
+      contracts: this.hasMany(Contract, 'playerId'),
+      transfers: this.hasMany(Transfer, 'playerId'),
+      caps: this.hasMany(Cap, 'playerId'),
+      matches: this.belongsToMany(Match, Cap, 'playerId', 'matchId'),
+      goals: this.hasMany(Goal, 'playerId'),
+      assists: this.hasMany(Goal, 'assistId'),
+      bookings: this.hasMany(Booking, 'playerId')
     }
   }
 
@@ -55,7 +53,7 @@ export default class Player extends Model {
     return {
       name: 'teams-teamId-players-playerId',
       params: {
-        teamId: this.team_id,
+        teamId: this.teamId,
         playerId: this.id
       }
     }
@@ -95,6 +93,10 @@ export default class Player extends Model {
     }
   }
 
+  get posIdx () {
+    return positions.indexOf(this.pos)
+  }
+
   get flag () {
     return nationalities[this.nationality]
   }
@@ -102,22 +104,22 @@ export default class Player extends Model {
   contract () {
     const contract = Contract
       .query()
-      .where('player_id', this.id)
-      .where('started_on', date => date <= this.team.currently_on)
-      .where('ended_on', date => this.team.currently_on < date)
+      .where('playerId', this.id)
+      .where('startedOn', date => date <= this.team.currentlyOn)
+      .where('endedOn', date => this.team.currentlyOn < date)
       .last()
     return contract || {}
   }
 
   expiresOn () {
-    return this.contract().ended_on
+    return this.contract().endedOn
   }
 
   recordAt (date) {
     return PlayerHistory
       .query()
-      .where('player_id', this.id)
-      .where('recorded_on', recordedOn => recordedOn <= date)
+      .where('playerId', this.id)
+      .where('recordedOn', recordedOn => recordedOn <= date)
       .last()
   }
 

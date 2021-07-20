@@ -17,7 +17,7 @@
     <template #form>
       <v-col cols="12">
         <v-select
-          v-model="cap.pos"
+          v-model="attributes.pos"
           label="Position"
           prepend-icon="mdi-run"
           :items="positions"
@@ -26,10 +26,10 @@
       </v-col>
       <v-col cols="12">
         <player-select
-          v-model="cap.player_id"
+          v-model="attributes.playerId"
           :players="activePlayers"
           item-value="id"
-          :disabled="cap.start > 0"
+          :disabled="attributes.start > 0"
           label="Player"
           required
         />
@@ -54,8 +54,8 @@
       match: { type: Object, required: true }
     },
     data: () => ({
-      cap: {
-        player_id: null,
+      attributes: {
+        playerId: null,
         pos: ''
       },
       rulesFor: {
@@ -74,7 +74,7 @@
       async submit () {
         await this.createCap({
           matchId: this.match.id,
-          cap: this.cap
+          attributes: this.attributes
         })
       }
     }

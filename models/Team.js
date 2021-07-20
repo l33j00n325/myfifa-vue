@@ -14,21 +14,21 @@ export default class Team extends Model {
       id: this.number(0),
 
       // Database fields
-      title: this.string(''),
-      started_on: this.string(''),
-      currently_on: this.string(''),
+      name: this.string(''),
+      startedOn: this.string(''),
+      currentlyOn: this.string(''),
       active: this.boolean(true),
       currency: this.string('$'),
 
       // Calculated fields
-      time_period: this.string(''),
-      badge_path: this.string('').nullable(),
+      timePeriod: this.string(''),
+      badgePath: this.string('').nullable(),
 
       // Associations
-      players: this.hasMany(Player, 'team_id'),
-      matches: this.hasMany(Match, 'team_id'),
-      squads: this.hasMany(Squad, 'team_id'),
-      competitions: this.hasMany(Competition, 'team_id')
+      players: this.hasMany(Player, 'teamId'),
+      matches: this.hasMany(Match, 'teamId'),
+      squads: this.hasMany(Squad, 'teamId'),
+      competitions: this.hasMany(Competition, 'teamId')
     }
   }
 
@@ -40,8 +40,8 @@ export default class Team extends Model {
   }
 
   get season () {
-    const date = parseISO(this.team.started_on)
-    const currentDate = parseISO(this.team.currently_on)
+    const date = parseISO(this.startedOn)
+    const currentDate = parseISO(this.currentlyOn)
     return differenceInYears(currentDate, date)
   }
 

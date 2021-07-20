@@ -4,10 +4,11 @@
       <v-data-table
         :headers="headers"
         :items="matches"
-        sort-by="played_on"
+        sort-by="playedOn"
         sort-desc
         item-key="id"
         no-data-text="No Matches Recorded"
+        :mobile-breakpoint="0"
       >
         <template #top>
           <v-select
@@ -55,18 +56,28 @@
             </v-chip>
           </div>
         </template>
-        <template #item.score="{ item }">
-          <v-btn
-            :to="item.link"
-            nuxt
-            text
-            :color="item.resultColor"
-          >
-            {{ item.score }}
-          </v-btn>
-        </template>
-        <template #item.played_on="{ item }">
-          {{ item.played_on | formatDate }}
+        <template #item="{ item }">
+          <tr>
+            <td class="text-center">
+              <div>{{ item.home }} v {{ item.away }}</div>
+              <div :class="`${item.resultColor}--text`">{{ item.score }}</div>
+            </td>
+            <td class="text-center">
+              <div>{{ item.competition }}</div>
+              <i v-if="item.stage">{{ item.stage }}</i>
+            </td>
+            <td>{{ item.playedOn | formatDate }}</td>
+            <td class="stick-right">
+              <v-btn
+                :to="item.link"
+                nuxt
+                block
+                color="info"
+              >
+                <v-icon>mdi-play</v-icon>
+              </v-btn>
+            </td>
+          </tr>
         </template>
       </v-data-table>
     </v-card-text>
@@ -74,7 +85,6 @@
 </template>
 
 <script>
-  import { addYears, parseISO } from 'date-fns'
   import { TeamAccessible } from '@/mixins'
 
   export default {
@@ -84,15 +94,11 @@
     ],
     data: () => ({
       headers: [
-        { text: 'Competition', value: 'competition', align: 'end' },
-        { text: 'Home', value: 'home', align: 'end' },
-        { text: 'Score', value: 'score', align: 'center', sortable: false },
-        { text: 'Away', value: 'away' },
-        { text: 'Date Played', value: 'played_on' },
-        { text: 'Stage', value: 'stage' }
+        { text: 'Match', value: 'score', align: 'center', sortable: false, width: 250 },
+        { text: 'Competition', value: 'competition', align: 'center', sortable: false, width: 250 },
+        { text: 'Date Played', value: 'playedOn', width: 120 },
+        { text: 'Link', value: 'link', align: 'center', class: 'stick-right', sortable: false, width: 40 }
       ],
-      seasonFilter: null,
-      competition: null,
       filterType: null,
       filterValue: null,
       filterValueMenuOpen: false,
@@ -108,7 +114,7 @@
       matches () {
         return this.$store.$db().model('Match')
           .query()
-          .where('team_id', this.team.id)
+          .where('teamId', this.team.id)
           .where(match => {
             for (const filter in this.filters) {
               if (!this.matchPassesFilter(match, filter)) {
@@ -129,8 +135,8 @@
       competitions () {
         return this.$store.$db().model('Competition')
           .query()
-          .where('team_id', this.team.id)
-          .where(comp => this.filters.Season === null || comp.season === this.filters.Season)
+          .where('teamId', this.team.id)
+          .where(comp => [null, comp.season].includes(this.filters.Season))
           .get()
           .map(comp => comp.name)
       },
@@ -166,10 +172,6 @@
       }
     },
     methods: {
-      clearAllFilters () {
-        this.seasonFilter = null
-        this.competition = null
-      },
       openFilterValueField () {
         if (this.filterValueOptions.length > 0) {
           this.filterValueMenuOpen = true
@@ -189,7 +191,7 @@
 
         switch (filter) {
           case 'Season':
-            return this.matchInSeason(match)
+            return filterValue === match.season
           case 'Competition':
             return filterValue === match.competition
           case 'Stage':
@@ -199,15 +201,8 @@
             return match.home.toLowerCase().indexOf(filterValue.toLowerCase()) >= 0 ||
               match.away.toLowerCase().indexOf(filterValue.toLowerCase()) >= 0
           case 'Result':
-            return filterValue.toLowerCase() === match.team_result
+            return filterValue.toLowerCase() === match.teamResult
         }
-      },
-      matchInSeason (match) {
-        const teamStart = parseISO(this.team.started_on)
-        const datePlayed = parseISO(match.played_on)
-        const seasonStart = addYears(teamStart, this.filters.Season)
-        const seasonEnd = addYears(teamStart, this.filters.Season + 1)
-        return seasonStart <= datePlayed && datePlayed < seasonEnd
       }
     }
   }

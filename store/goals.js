@@ -1,19 +1,55 @@
+import { gql } from 'nuxt-graphql-request'
+
 // actions
 export const actions = {
-  async create (_, { matchId, goal }) {
-    const data = await this.$axios.$post(`matches/${matchId}/goals`, {
-      goal
-    })
-    this.$db().model('Goal').insert({ data })
+  async create (_, { matchId, attributes }) {
+    const query = gql`
+      mutation createGoal($matchId: ID!, $attributes: GoalAttributes!) {
+        addGoal(matchId: $matchId, attributes: $attributes) {
+          errors { fullMessages }
+        }
+      }
+    `
+
+    const { addGoal: { errors } } =
+      await this.$graphql.default.request(query, { matchId, attributes })
+
+    if (errors) {
+      throw new Error(errors.fullMessages[0])
+    }
   },
-  async update (_, goal) {
-    const data = await this.$axios.$patch(`goals/${goal.id}`, {
-      goal
-    })
-    this.$db().model('Goal').insert({ data })
+  async update (_, { id, attributes }) {
+    const query = gql`
+      mutation ($id: ID!, $attributes: GoalAttributes!) {
+        updateGoal(id: $id, attributes: $attributes) {
+          errors { fullMessages }
+        }
+      }
+    `
+
+    const { updateGoal: { errors } } =
+      await this.$graphql.default.request(query, { id, attributes })
+
+    if (errors) {
+      throw new Error(errors.fullMessages[0])
+    }
   },
-  async remove (_, goalId) {
-    await this.$axios.$delete(`goals/${goalId}`)
-    this.$db().model('Goal').delete(goalId)
+  async remove (_, id) {
+    const query = gql`
+      mutation removeGoal($id: ID!) {
+        removeGoal(id: $id) {
+          errors { fullMessages }
+        }
+      }
+    `
+
+    const { removeGoal: { errors } } =
+      await this.$graphql.default.request(query, { id })
+
+    if (errors) {
+      throw new Error(errors.fullMessages[0])
+    } else {
+      this.$db().model('Goal').delete(id)
+    }
   }
 }

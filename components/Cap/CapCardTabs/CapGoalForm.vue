@@ -1,31 +1,34 @@
 <template>
-  <base-form :submit="saveGoal">
+  <base-form
+    :submit="saveGoal"
+    @reset="resetAttributes"
+  >
     <template #default="{ valid, loading }">
       <div class="pa-2">
         <div class="text-subtitle-2 pb-2">
           Add Goal
         </div>
-        <minute-field v-model="minute" />
-        <player-select
-          v-model="goal.assist_id"
-          :players="assistOptions"
+        <minute-field v-model.number="minute" />
+        <cap-select
+          v-model="attributes.assistId"
+          :caps="assistOptions"
           label="Assisted By"
           icon="mdi-human-greeting"
-          :disabled="goal.penalty || goal.own_goal"
+          :disabled="attributes.penalty || attributes.ownGoal"
           clearable
           hide-details
         />
         <v-checkbox
-          v-model="goal.penalty"
+          v-model="attributes.penalty"
           label="Penalty"
-          :disabled="goal.own_goal"
+          :disabled="attributes.ownGoal"
           hide-details
           @change="clearAssistedBy"
         />
         <v-checkbox
-          v-model="goal.own_goal"
+          v-model="attributes.ownGoal"
           label="Own Goal"
-          :disabled="goal.penalty"
+          :disabled="attributes.penalty"
           hide-details
           @change="clearAssistedBy"
         />
@@ -60,20 +63,20 @@
       cap: { type: Object, required: true }
     },
     data: () => ({
-      goal: {
+      attributes: {
         home: true,
-        player_id: null,
-        player_name: '',
-        assisted_by: '',
-        assist_id: '',
-        own_goal: false,
+        playerId: null,
+        playerName: '',
+        assistedBy: '',
+        assistId: '',
+        ownGoal: false,
         penalty: false
       }
     }),
     computed: {
       assistOptions () {
         return this.unsubbedPlayers.filter(cap =>
-          cap.player_id !== this.goal.player_id
+          cap.playerId !== this.attributes.playerId
         )
       }
     },
@@ -81,14 +84,14 @@
       cap: {
         immediate: true,
         handler (cap) {
-          this.goal.player_id = cap.player_id
-          this.goal.player_name = cap.name
+          this.attributes.playerId = cap.playerId
+          this.attributes.playerName = cap.name
         }
       },
       'match.home': {
         immediate: true,
         handler (home) {
-          this.goal.home = home === this.team.title
+          this.attributes.home = home === this.team.name
         }
       }
     },
@@ -98,19 +101,23 @@
       }),
       clearAssistedBy (bool) {
         if (bool) {
-          this.goal.assist_id = null
-          this.goal.assisted_by = null
+          this.attributes.assistId = null
+          this.attributes.assistedBy = null
         }
       },
       async saveGoal () {
         await this.createGoal({
           matchId: this.match.id,
-          goal: {
-            ...this.goal,
+          attributes: {
+            ...this.attributes,
             minute: this.minute
           }
         })
         this.$emit('submitted')
+      },
+      resetAttributes () {
+        this.attributes.ownGoal = false
+        this.attributes.penalty = false
       }
     }
   }

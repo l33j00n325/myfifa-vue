@@ -40,15 +40,17 @@ export const actions = {
 
       if (token) {
         commit('setToken', { token })
+        this.$graphql.default.setHeader('authorization', `Bearer ${token}`)
 
         try {
           await dispatch('user/get')
 
           // load current Team, if present
           if ('teamId' in params) {
-            await dispatch('teams/get', { teamId: params.teamId })
+            await dispatch('teams/get', { id: params.teamId })
           }
         } catch (e) {
+          console.error(e)
           commit('setToken', { token: null })
         }
       }

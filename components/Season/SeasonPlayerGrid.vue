@@ -1,5 +1,8 @@
 <template>
-  <v-card flat>
+  <v-card
+    flat
+    class="mt-2"
+  >
     <v-card-title>
       <v-btn-toggle
         v-model="mode"
@@ -32,9 +35,8 @@
       <v-data-table
         :headers="headers"
         :items="rows"
-        :loading="loading"
-        sort-by="pos"
         :search="search"
+        sort-by="pos"
         item-key="id"
         :mobile-breakpoint="0"
         no-data-text="No Players Recorded"
@@ -71,14 +73,17 @@
 
 <script>
   import { positions } from '@/constants'
-  import findLast from 'lodash.findlast'
+
+  function sortPos (posA, posB) {
+    return positions.indexOf(posA) - positions.indexOf(posB)
+  }
 
   export default {
     name: 'SeasonPlayerGrid',
     props: {
-      seasonStart: { type: String, required: true },
-      seasonEnd: { type: String, required: true },
-      seasonData: { type: Object, required: true }
+      season: { type: Number, required: true },
+      playerPerformanceStats: { type: Array, required: true },
+      playerDevelopmentStats: { type: Array, required: true }
     },
     data: () => ({
       mode: 0,
@@ -86,9 +91,7 @@
         { text: 'Growth', color: 'green', icon: 'mdi-trending-up' },
         { text: 'Statistics', color: 'red', icon: 'mdi-numeric' }
       ],
-      loading: false,
-      filterActive: true,
-      search: ''
+      search: null
     }),
     computed: {
       team () {
@@ -99,8 +102,8 @@
       },
       headers () {
         let headers = [
-          { text: 'Name', value: 'name' },
-          { text: 'Position', value: 'pos', align: 'center', sort: this.sortPos },
+          { text: 'Name', value: 'name', width: 200, class: 'stick-left', cellClass: 'stick-left' },
+          { text: 'Pos', value: 'pos', align: 'center', sort: sortPos },
           { text: 'Age', value: 'age', align: 'center' }
         ]
 
@@ -109,62 +112,53 @@
             return headers.concat([
               { text: 'OVR', value: 'endOvr', align: 'center' },
               { text: 'OVR Change', value: 'ovrChange', align: 'center' },
-              { text: 'Value', value: 'endValue', align: 'right' },
-              { text: 'Value Change', value: 'valueChange', align: 'right' }
+              { text: 'Value', value: 'endValue', align: 'end', class: 'text-right', cellClass: 'text-right' },
+              { text: 'Value Change', value: 'valueChange', align: 'end', class: 'text-right', cellClass: 'text-right' }
             ])
           case 1: // Statistics
             return headers.concat([
-              { text: 'Games Played', value: 'numGames', align: 'right' },
-              { text: 'Minutes', value: 'numMinutes', align: 'right' },
-              { text: 'Goals', value: 'numGoals', align: 'right' },
-              { text: 'Assists', value: 'numAssists', align: 'right' },
-              { text: 'Clean Sheets', value: 'numCs', align: 'right' }
+              { text: 'Games Played', value: 'numMatches', align: 'end', class: 'text-right', cellClass: 'text-right' },
+              { text: 'Minutes', value: 'numMinutes', align: 'end', class: 'text-right', cellClass: 'text-right' },
+              { text: 'Goals', value: 'numGoals', align: 'end', class: 'text-right', cellClass: 'text-right' },
+              { text: 'Assists', value: 'numAssists', align: 'end', class: 'text-right', cellClass: 'text-right' },
+              { text: 'Clean Sheets', value: 'numCleanSheets', align: 'end', class: 'text-right', cellClass: 'text-right' }
             ])
           default:
             return headers
         }
       },
-      players () {
-        return this.$store.$db().model('Player')
-          .query()
-          .whereIdIn(this.seasonData.player_ids.map(id => parseInt(id)))
-          .get()
-      },
       rows () {
-        return this.players.map(player => {
-          const firstRecord = findLast(
-            this.seasonData.records[player.id],
-            record => record.recorded_on <= this.seasonStart
-          ) || this.seasonData.records[player.id][0]
-          const lastRecord = findLast(
-            this.seasonData.records[player.id],
-            record => record.recorded_on <= this.seasonEnd
-          )
+        return this.playerDevelopmentStats.map(stats => {
+          const player = this.$store.$db().model('Player').find(stats.playerId)
 
-          const startOvr = firstRecord.ovr
-          const startValue = firstRecord.value
-          const endOvr = lastRecord.ovr
-          const endValue = lastRecord.value
+          const startOvr = stats.ovr[0]
+          const startValue = stats.value[0]
+          const endOvr = stats.ovr[1]
+          const endValue = stats.value[1]
 
           const ovrChange = endOvr - startOvr
           const valueChange = (endValue - startValue) / startValue * 100
 
-          const numGames = this.seasonData.num_games[player.id] || 0
-          const numMinutes = this.seasonData.num_minutes[player.id] || 0
-          const numGoals = this.seasonData.num_goals[player.id] || 0
-          const numAssists = this.seasonData.num_assists[player.id] || 0
-          const numCs = this.seasonData.num_cs[player.id] || 0
+          const matchStats = this.playerPerformanceStats.reduce((totalStats, data) => {
+            if (data.playerId === stats.playerId) {
+              ['Matches', 'Minutes', 'Goals', 'Assists', 'CleanSheets'].forEach(metric => {
+                totalStats[`num${metric}`] += data[`num${metric}`]
+              })
+            }
+            return totalStats
+          }, {
+            numMatches: 0,
+            numMinutes: 0,
+            numGoals: 0,
+            numAssists: 0,
+            numCleanSheets: 0
+          })
 
           return {
             ...player,
+            ...matchStats,
             link: player.link,
-            age: parseInt(this.seasonEnd) - player.birth_year,
-            numGames,
-            numMinutes,
-            numGoals,
-            numAssists,
-            numCs,
-
+            age: player.age - (this.team.season - this.season),
             endOvr,
             endValue,
             ovrChange,
@@ -174,9 +168,6 @@
       }
     },
     methods: {
-      sortPos (posA, posB) {
-        return positions.indexOf(posA) - positions.indexOf(posB)
-      },
       ovrColor (player) {
         switch (true) {
           case player.ovrChange > 6:

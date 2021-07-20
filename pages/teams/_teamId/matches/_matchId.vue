@@ -67,7 +67,7 @@
                   max-size="30"
                 />
               </div>
-              <div class="subheading">{{ match.played_on | formatDate }}</div>
+              <div class="subheading">{{ match.playedOn | formatDate }}</div>
             </v-col>
             <v-container class="py-0">
               <v-row
@@ -81,9 +81,9 @@
                 >
                   <fitty-text :text="match.home" />
                   <div :class="`font-weight-bold ${match.resultColor}--text`">
-                    {{ match.home_score }}
-                    <span v-if="match.penalty_shootout">
-                      ({{ match.penalty_shootout.home_score }})
+                    {{ match.homeScore }}
+                    <span v-if="match.penaltyShootout">
+                      ({{ match.penaltyShootout.homeScore }})
                     </span>
                   </div>
                 </v-col>
@@ -93,9 +93,9 @@
                 >
                   <fitty-text :text="match.away" />
                   <div :class="`font-weight-bold ${match.resultColor}--text`">
-                    {{ match.away_score }}
-                    <span v-if="match.penalty_shootout">
-                      ({{ match.penalty_shootout.away_score }})
+                    {{ match.awayScore }}
+                    <span v-if="match.penaltyShootout">
+                      ({{ match.penaltyShootout.awayScore }})
                     </span>
                   </div>
                 </v-col>
@@ -157,54 +157,62 @@
 </template>
 
 <script>
-  import { mapMutations, mapActions } from 'vuex'
+  import { mapMutations } from 'vuex'
+  import { gql } from 'nuxt-graphql-request'
   import { TeamAccessible } from '@/mixins'
+  import {
+    matchFragment,
+    capFragment,
+    goalFragment,
+    substitutionFragment,
+    bookingFragment,
+    penaltyShootoutFragment,
+    playerFragment,
+    baseSquadFragment
+  } from '@/fragments'
 
   export default {
     name: 'MatchPage',
     mixins: [
       TeamAccessible
     ],
-    middleware: [
-      'authenticated'
-    ],
-    transition: 'fade-transition',
     computed: {
       matchId () {
-        return this.$route.params.matchId
+        return parseInt(this.$route.params.matchId)
       },
       match () {
         return this.$store.$db().model('Match')
           .query()
-          .with('team|caps|goals|bookings|substitutions|penalty_shootout')
+          .with('team|goals|bookings|substitutions|penaltyShootout')
+          .with('caps.player')
           .find(this.matchId)
       },
       players () {
         return this.$store.$db().model('Player')
           .query()
-          .where('team_id', this.team.id)
+          .where('teamId', this.team.id)
           .get()
       },
       readonly () {
-        return this.match.played_on !== this.team.currently_on
+        return this.match.playedOn !== this.team.currentlyOn
       },
       prevMatchLink () {
         const prevMatch = this.$store.$db().model('Match')
           .query()
-          .where('team_id', this.match.team_id)
-          .where('played_on', date => date < this.match.played_on)
-          .orderBy('played_on')
+          .where('teamId', this.match.teamId)
+          .where('playedOn', date => date < this.match.playedOn)
+          .orderBy('playedOn')
           .last()
-        return prevMatch && prevMatch.link
+        return prevMatch?.link
       },
       nextMatchLink () {
         const nextMatch = this.$store.$db().model('Match')
           .query()
-          .where('team_id', this.match.team_id)
-          .where('played_on', date => date > this.match.played_on)
-          .orderBy('played_on')
+          .where('teamId', this.match.teamId)
+          .where('playedOn', date => date > this.match.playedOn)
+          .orderBy('playedOn')
           .first()
-        return nextMatch && nextMatch.link
+        return nextMatch?.link
       }
     },
     watch: {
@@ -218,15 +226,42 @@
       }
     },
     async fetch () {
-      await Promise.all([
-        this.getMatch({ matchId: this.matchId }),
-        this.fetchPlayers({ teamId: this.team.id }),
-        this.searchPlayerHistories({ teamId: this.team.id })
-      ])
+      const query = gql`
+        query fetchMatchPage($matchId: ID!, $teamId: ID!) {
+          match(id: $matchId) {
+            ...MatchData
+            caps { ...CapData }
+            goals { ...GoalData }
+            substitutions { ...SubstitutionData }
+            bookings { ...BookingData }
+            penaltyShootout { ...PenaltyShootoutData }
+          }
+          team(id: $teamId) {
+            players { ...PlayerData }
+            squads { ...BaseSquadData }
+          }
+        }
+        ${matchFragment}
+        ${capFragment}
+        ${goalFragment}
+        ${substitutionFragment}
+        ${bookingFragment}
+        ${penaltyShootoutFragment}
+        ${playerFragment}
+        ${baseSquadFragment}
+      `
 
-      if (!this.readonly) {
-        await this.fetchSquads({ teamId: this.team.id })
-      }
+      const { match, team: { players, squads } } =
+        await this.$graphql.default.request(query, {
+          matchId: this.matchId,
+          teamId: this.team.id
+        })
+
+      await Promise.all([
+        this.$store.$db().model('Match').insertOrUpdate({ data: match }),
+        this.$store.$db().model('Player').insertOrUpdate({ data: players }),
+        this.$store.$db().model('Squad').insertOrUpdate({ data: squads })
+      ])
 
       this.setPage({
         title: `${this.match.home} vs ${this.match.away}`,
@@ -234,16 +269,8 @@
         caption: `v ${this.match.opponent}`
       })
     },
-    methods: {
-      ...mapMutations('app', {
-        setPage: 'setPage'
-      }),
-      ...mapActions({
-        getMatch: 'matches/get',
-        fetchPlayers: 'players/fetch',
-        searchPlayerHistories: 'playerHistories/search',
-        fetchSquads: 'squads/fetch'
-      })
-    }
+    methods: mapMutations('app', {
+      setPage: 'setPage'
+    })
   }
 </script>

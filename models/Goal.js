@@ -8,22 +8,22 @@ export default class Goal extends Model {
     return {
       // Primary/Foreign keys
       id: this.number(0),
-      match_id: this.number(0),
-      player_id: this.number(null).nullable(),
-      assist_id: this.number(null).nullable(),
+      matchId: this.number(0),
+      playerId: this.number(null).nullable(),
+      assistId: this.number(null).nullable(),
 
       // Database fields
-      player_name: this.string(''),
-      assisted_by: this.string('').nullable(),
+      playerName: this.string(''),
+      assistedBy: this.string('').nullable(),
       minute: this.number(0),
       home: this.boolean(true),
-      own_goal: this.boolean(false),
+      ownGoal: this.boolean(false),
       penalty: this.boolean(false),
-      created_at: this.string(''),
+      createdAt: this.string(''),
 
       // Associations
-      player: this.belongsTo(Player, 'player_id', 'id'),
-      assisting_player: this.belongsTo(Player, 'assist_id', 'id')
+      player: this.belongsTo(Player, 'playerId', 'id'),
+      assistingPlayer: this.belongsTo(Player, 'assistId', 'id')
     }
   }
 

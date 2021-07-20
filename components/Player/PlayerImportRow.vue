@@ -25,9 +25,8 @@
         <v-icon
           left
           dark
-        >
-          mdi-alert
-        </v-icon>
+          v-text="'mdi-alert'"
+        />
         {{ error }}
       </v-tooltip>
       <v-btn
@@ -75,7 +74,7 @@
     </td>
     <td>
       <v-select
-        v-model="player.sec_pos"
+        v-model="player.secPos"
         label="2nd Position(s)"
         :items="positions"
         multiple
@@ -89,7 +88,7 @@
     </td>
     <td>
       <v-text-field
-        v-model="player.age"
+        v-model.number="player.age"
         label="Age"
         :rules="[isRequired, isNumber]"
         dense
@@ -100,7 +99,7 @@
     </td>
     <td>
       <v-text-field
-        v-model="player.ovr"
+        v-model.number="player.ovr"
         label="OVR"
         :rules="[isRequired, isNumber, inRange(null, [40, 100])]"
         dense
@@ -111,7 +110,7 @@
     </td>
     <td>
       <v-money-field
-        v-model="player.value"
+        v-model.number="player.value"
         label="Value"
         :prefix="team.currency"
         required
@@ -122,7 +121,7 @@
     </td>
     <td>
       <v-text-field
-        v-model="player.kit_no"
+        v-model.number="player.kitNo"
         label="Kit Number"
         :rules="[isNumber, inRange(null, [1, 99])]"
         dense
@@ -133,9 +132,9 @@
     </td>
     <td>
       <v-date-field
-        v-model="contract.ended_on"
+        v-model="contract.endedOn"
         label="Contract Ends"
-        :min="contract.started_on"
+        :min="contract.startedOn"
         :max="maxEndDate"
         required
         dense
@@ -146,7 +145,7 @@
     </td>
     <td>
       <v-money-field
-        v-model="contract.wage"
+        v-model.number="contract.wage"
         label="Wage"
         :prefix="team.currency"
         required
@@ -157,7 +156,7 @@
     </td>
     <td>
       <v-money-field
-        v-model="contract.signing_bonus"
+        v-model.number="contract.signingBonus"
         label="Signing Bonus"
         :prefix="team.currency"
         dense
@@ -167,7 +166,7 @@
     </td>
     <td>
       <v-money-field
-        v-model="contract.release_clause"
+        v-model.number="contract.releaseClause"
         label="Release Clause"
         :prefix="team.currency"
         dense
@@ -177,7 +176,7 @@
     </td>
     <td>
       <v-money-field
-        v-model="contract.performance_bonus"
+        v-model.number="contract.performanceBonus"
         label="Perf. Bonus"
         :prefix="team.currency"
         dense
@@ -187,8 +186,8 @@
     </td>
     <td>
       <v-text-field
-        v-if="contract.performance_bonus"
-        v-model="contract.bonus_req"
+        v-if="contract.performanceBonus"
+        v-model.number="contract.bonusReq"
         label="Bonus Req."
         prefix="if"
         :rules="[isRequired, isNumber]"
@@ -200,8 +199,8 @@
     </td>
     <td>
       <v-select
-        v-if="contract.performance_bonus"
-        v-model="contract.bonus_req_type"
+        v-if="contract.performanceBonus"
+        v-model="contract.bonusReqType"
         label="Bonus Req. Type"
         :items="bonusRequirementTypes"
         :rules="[isRequired]"
@@ -232,7 +231,7 @@
       error: '',
       isRequired: isRequired(),
       isNumber: isNumber(),
-      inRange: inRange,
+      inRange,
       positions,
       bonusRequirementTypes: [
         'Appearances',
@@ -246,11 +245,11 @@
         return this.$store.$db().model('Team').find(this.$route.params.teamId)
       },
       contract () {
-        return this.player.contracts_attributes[0]
+        return this.player.contractsAttributes[0]
       },
       maxEndDate () {
-        return this.contract.started_on && format(
-          addYears(parseISO(this.contract.started_on), 6),
+        return this.contract.startedOn && format(
+          addYears(parseISO(this.contract.startedOn), 6),
           'yyyy-MM-dd'
         )
       }
@@ -274,10 +273,10 @@
       async savePlayer () {
         try {
           this.loading = true
-          await this.createPlayer({
-            teamId: this.team.id,
-            player: this.player
-          })
+
+          const attributes = { ...this.player }
+          delete attributes.rowId
+          await this.createPlayer({ teamId: this.team.id, attributes })
           this.saved = true
         } catch (e) {
           this.error = e.message

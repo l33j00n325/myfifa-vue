@@ -50,7 +50,7 @@
         immediate: true,
         handler (cap) {
           this.pos = cap.pos
-          this.playerId = cap.player_id
+          this.playerId = cap.playerId
         }
       }
     },
@@ -65,18 +65,18 @@
         await this.updateCapAttribute('pos', position)
       },
       async setPlayer (playerId) {
-        await this.updateCapAttribute('player_id', playerId)
+        await this.updateCapAttribute('playerId', playerId)
       },
       async updateCapAttribute (key, value) {
         try {
           await this.updateCap({
             id: this.cap.id,
-            [key]: value
+            attributes: { [key]: value }
           })
           this.$emit('submitted')
         } catch (e) {
           this.pos = this.cap.pos
-          this.playerId = this.cap.player_id
+          this.playerId = this.cap.playerId
           this.announce({
             message: e.message,
             color: 'red'

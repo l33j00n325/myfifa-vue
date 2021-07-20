@@ -1,12 +1,15 @@
 <template>
-  <base-form :submit="saveBooking">
+  <base-form
+    :submit="saveBooking"
+    @reset="attributes.redCard = false"
+  >
     <template #default="{ valid, loading }">
       <div class="pa-2">
         <div class="text-subtitle-2 pb-2">
           Book Player
         </div>
-        <minute-field v-model="minute" />
-        <v-radio-group v-model="booking.red_card">
+        <minute-field v-model.number="minute" />
+        <v-radio-group v-model="attributes.redCard">
           <v-radio
             label="Yellow Card"
             color="orange darken-2"
@@ -49,25 +52,25 @@
       cap: { type: Object, required: true }
     },
     data: () => ({
-      booking: {
+      attributes: {
         home: true,
-        player_id: null,
-        player_name: '',
-        red_card: false
+        playerId: null,
+        playerName: '',
+        redCard: false
       }
     }),
     watch: {
       cap: {
         immediate: true,
         handler (cap) {
-          this.booking.player_id = cap.player_id
-          this.booking.player_name = cap.name
+          this.attributes.playerId = cap.playerId
+          this.attributes.playerName = cap.name
         }
       },
       'match.home': {
         immediate: true,
         handler (home) {
-          this.booking.home = home === this.team.title
+          this.attributes.home = home === this.team.name
         }
       }
     },
@@ -78,8 +81,8 @@
       async saveBooking () {
         await this.createBooking({
           matchId: this.match.id,
-          booking: {
-            ...this.booking,
+          attributes: {
+            ...this.attributes,
             minute: this.minute
           }
         })

@@ -23,7 +23,7 @@ export default {
       return this.sortedCaps.filter(cap => {
         return this.minute
           ? cap.start <= this.minute && this.minute <= cap.stop
-          : !cap.subbed_out
+          : !cap.subbedOut
       })
     }
   }

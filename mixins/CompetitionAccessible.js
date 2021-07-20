@@ -8,7 +8,7 @@ export default {
     competition () {
       return this.$store.$db().model('Competition')
         .query()
-        .with('stages.table_rows|fixtures')
+        .with('stages.tableRows|fixtures')
         .find(this.$route.params.competitionId)
     },
     competitionTeams () {
@@ -18,7 +18,7 @@ export default {
   methods: {
     teamClass (name) {
       switch (name) {
-        case this.team.title:
+        case this.team.name:
           return 'primary--text'
         case this.competition.champion:
           return name ? 'red--text' : ''

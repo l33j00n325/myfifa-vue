@@ -10,7 +10,7 @@
       left
       v-text="'mdi-book'"
     />
-    {{ event.player_name }}
+    {{ event.playerName }}
   </base-match-event>
 </template>
 
@@ -24,7 +24,7 @@
     },
     computed: {
       color () {
-        return this.event.red_card ? 'red' : 'amber'
+        return this.event.redCard ? 'red' : 'amber'
       }
     }
   }

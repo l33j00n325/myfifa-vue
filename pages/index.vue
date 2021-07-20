@@ -20,10 +20,6 @@
 
   export default {
     name: 'AppPage',
-    middleware: [
-      'authenticated'
-    ],
-    transition: 'fade-transition',
     computed: mapGetters([
       'authenticated'
     ]),

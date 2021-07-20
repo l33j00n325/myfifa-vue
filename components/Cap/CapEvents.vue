@@ -47,7 +47,7 @@
       mdi-ambulance
     </v-icon>
     <v-icon
-      v-if="cap.subbed_out"
+      v-if="cap.subbedOut"
       color="orange darken-2"
       small
     >
@@ -66,20 +66,20 @@
     computed: {
       numGoals () {
         return this.match.goals
-          .filter(g => g.player_id === this.cap.player_id && !g.own_goal)
+          .filter(g => g.playerId === this.cap.playerId && !g.ownGoal)
           .length
       },
       numAssists () {
         return this.match.goals
-          .filter(g => g.assist_id === this.cap.player_id)
+          .filter(g => g.assistId === this.cap.playerId)
           .length
       },
       booking () {
         const bookings = this.match.bookings.filter(booking =>
-          booking.player_id === this.cap.player_id
+          booking.playerId === this.cap.playerId
         )
 
-        if (bookings.some(b => b.red_card)) {
+        if (bookings.some(b => b.redCard)) {
           return 'red'
         } else if (bookings.length > 0) {
           return 'yellow darken-2'
@@ -89,7 +89,7 @@
       },
       injured () {
         return this.match.substitutions.some(s =>
-          s.player_id === this.cap.player_id && s.injury
+          s.playerId === this.cap.playerId && s.injury
         )
       }
     }

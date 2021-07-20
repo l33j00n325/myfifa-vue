@@ -2,7 +2,7 @@
   <v-app dark>
     <template v-if="currentUser">
       <app-bar />
-      <template v-if="teamPage">
+      <template v-if="team">
         <team-navigator />
         <client-only>
           <team-channel />
@@ -21,21 +21,23 @@
 
   export default {
     name: 'Layout',
+    middleware: [
+      'authenticated'
+    ],
+    transition: 'fade-transition',
     head () {
       return {
         title: this.title
       }
     },
     computed: {
+      ...mapState(['token']),
       ...mapState('app', [
         'title'
       ]),
       ...mapGetters([
         'currentUser'
       ]),
-      teamPage () {
-        return 'teamId' in this.$route.params
-      },
       team () {
         return this.$store.$db().model('Team').find(this.$route.params.teamId)
       }
@@ -45,6 +47,16 @@
         immediate: true,
         handler (darkModeOn) {
           this.$vuetify.theme.dark = darkModeOn
+        }
+      },
+      token: {
+        immediate: true,
+        handler (token) {
+          if (token) {
+            this.$graphql.default.setHeader('authorization', `Bearer ${token}`)
+          } else {
+            this.$graphql.default.setHeaders({})
+          }
         }
       }
     }

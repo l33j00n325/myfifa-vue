@@ -1,8 +1,5 @@
 <template>
-  <base-form
-    :submit="submit"
-    :reset-after-submit="false"
-  >
+  <base-form :submit="submit">
     <template #default="{ loading, valid }">
       <v-card>
         <v-toolbar

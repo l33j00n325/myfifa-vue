@@ -7,13 +7,13 @@ export default class PlayerHistory extends Model {
     return {
       // Primary/Foreign keys
       id: this.number(0),
-      player_id: this.number(0),
+      playerId: this.number(0),
 
       // Database fields
-      recorded_on: this.string(''),
+      recordedOn: this.string(''),
       ovr: this.number(60),
       value: this.number(0),
-      kit_no: this.number(0).nullable()
+      kitNo: this.number(0).nullable()
     }
   }
 }

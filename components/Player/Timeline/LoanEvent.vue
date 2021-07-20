@@ -8,12 +8,12 @@
     :dense="dense"
   >
     <template #heading>
-      <template v-if="event.started_on > team.currently_on">
-        Scheduled on {{ event.started_on | formatDate }}
+      <template v-if="event.startedOn > team.currentlyOn">
+        Scheduled on {{ event.startedOn | formatDate }}
       </template>
       <template v-else>
-        {{ event.started_on | formatDate }} -
-        <span v-if="event.ended_on">{{ event.ended_on | formatDate }}</span>
+        {{ event.startedOn | formatDate }} -
+        <span v-if="event.endedOn">{{ event.endedOn | formatDate }}</span>
         <span v-else>Present</span>
       </template>
     </template>
@@ -26,9 +26,9 @@
         <td class="font-weight-bold">Destination</td>
         <td class="pl-1">{{ event.destination }}</td>
       </tr>
-      <tr v-if="event.wage_percentage">
+      <tr v-if="event.wagePercentage">
         <td class="font-weight-bold">Wage Percentage</td>
-        <td class="pl-1">{{ event.wage_percentage }}%</td>
+        <td class="pl-1">{{ event.wagePercentage }}%</td>
       </tr>
       <tr>
         <td class="font-weight-bold">Duration</td>
@@ -54,18 +54,18 @@
     },
     computed: {
       title () {
-        return this.team.title === this.event.origin
+        return this.team.name === this.event.origin
           ? `Loan at ${this.event.destination}`
           : `Loan from ${this.event.origin}`
       },
       length () {
         return formatDistance(
-          parseISO(this.event.ended_on || this.team.currently_on),
-          parseISO(this.event.started_on)
+          parseISO(this.event.endedOn || this.team.currentlyOn),
+          parseISO(this.event.startedOn)
         )
       },
       duration () {
-        return this.event.started_on > this.team.currently_on
+        return this.event.startedOn > this.team.currentlyOn
           ? `Departs in ${this.length}`
           : `Away for ${this.length}`
       }

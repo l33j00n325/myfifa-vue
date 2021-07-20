@@ -4,24 +4,34 @@
     width="100%"
     class="d-flex align-center"
   >
-    <span
-      v-if="team.badge_path"
-      class="mr-2"
-    >
+    <span class="mr-2">
       <v-img
+        v-if="team.badgePath"
         :src="badgeUrl"
         height="32px"
         width="32px"
         contain
       />
+      <v-tooltip
+        v-else
+        bottom
+      >
+        <template #activator="{ on }">
+          <v-icon
+            large
+            v-on="on"
+            v-text="'mdi-shield-off-outline'"
+          />
+        </template>
+        <span>Edit Team to upload Badge</span>
+      </v-tooltip>
     </span>
     <v-toolbar-title>
       <div
         class="text-overline"
         :style="{ lineHeight: '1rem' }"
-      >
-        {{ team.title }}
-      </div>
+        v-text="team.name"
+      />
       <div class="text-h6 font-weight-thin">
         {{ headline }}
         <small v-show="caption">{{ caption }}</small>
@@ -47,8 +57,8 @@
       ]),
       badgeUrl () {
         const { browserBaseURL } = this.$config.axios
-        return this.team.badge_path &&
-          `${browserBaseURL.replace(/\/api/, '')}${this.team.badge_path}`
+        return this.team.badgePath &&
+          `${browserBaseURL.replace(/\/api/, '')}${this.team.badgePath}`
       }
     }
   }

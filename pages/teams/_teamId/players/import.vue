@@ -110,10 +110,6 @@
     mixins: [
       TeamAccessible
     ],
-    middleware: [
-      'authenticated'
-    ],
-    transition: 'fade-transition',
     data: () => ({
       valid: false,
       numPlayers: 0,
@@ -125,18 +121,18 @@
         { text: 'Name', value: 'name' },
         { text: 'Nationality', value: 'nationality' },
         { text: 'Position', value: 'pos' },
-        { text: 'Secondary Position(s)', value: 'sec_pos' },
+        { text: 'Secondary Position(s)', value: 'secPos' },
         { text: 'Age', value: 'age' },
         { text: 'OVR', value: 'ovr' },
         { text: 'Value', value: 'value' },
-        { text: 'Kit Number', value: 'kit_no' },
-        { text: 'Contract Ends', value: 'contract_ends' },
+        { text: 'Kit Number', value: 'kitNo' },
+        { text: 'Contract Ends', value: 'contractEnds' },
         { text: 'Wage', value: 'wage' },
-        { text: 'Signing Bonus', value: 'signing_bonus' },
-        { text: 'Release Clause', value: 'release_clause' },
-        { text: 'Performance Bonus', value: 'performance_bonus' },
-        { text: '', value: 'bonus_req' },
-        { text: '', value: 'bonus_req_type' }
+        { text: 'Signing Bonus', value: 'signingBonus' },
+        { text: 'Release Clause', value: 'releaseClause' },
+        { text: 'Performance Bonus', value: 'performanceBonus' },
+        { text: '', value: 'bonusReq' },
+        { text: '', value: 'bonusReqType' }
       ]
     }),
     mounted () {
@@ -155,21 +151,21 @@
           name: '',
           pos: '',
           nationality: null,
-          sec_pos: [],
+          secPos: [],
           ovr: null,
           value: 0,
-          kit_no: null,
+          kitNo: null,
           age: null,
-          contracts_attributes: [
+          contractsAttributes: [
             {
-              started_on: this.team.currently_on,
-              ended_on: this.team.currently_on,
+              startedOn: this.team.currentlyOn,
+              endedOn: this.team.currentlyOn,
               wage: null,
-              release_clause: null,
-              signing_bonus: null,
-              performance_bonus: null,
-              bonus_req: null,
-              bonus_req_type: null
+              releaseClause: null,
+              signingBonus: null,
+              performanceBonus: null,
+              bonusReq: null,
+              bonusReqType: null
             }
           ]
         })
@@ -178,18 +174,17 @@
         this.players = this.players.filter(player => player.rowId !== row.rowId)
       },
       upload (event) {
-        /* Boilerplate to set up FileReader */
         const reader = new FileReader()
         reader.onload = (e) => {
-          /* Parse data */
+          // Parse data
           const bstr = e.target.result
           const wb = XLSX.read(bstr, { type: 'binary', cellDates: true })
-          /* Get first worksheet */
+          // Get first worksheet
           const wsname = wb.SheetNames[0]
           const ws = wb.Sheets[wsname]
-          /* Convert array of arrays */
+          // Convert array of arrays
           const data = XLSX.utils.sheet_to_json(ws)
-          /* Update state */
+          // Update state
           data.forEach(player => this.importPlayer(player))
         }
 
@@ -207,23 +202,22 @@
           name: player['Name'],
           pos: player['Position'],
           nationality: player['Nationality'],
-          sec_pos: player['Secondary Position(s)'] &&
-            player['Secondary Position(s)'].split(','),
+          secPos: player['Secondary Position(s)']?.split(','),
           ovr: player['OVR'],
           value: player['Value'],
-          kit_no: player['Kit Number'],
+          kitNo: player['Kit Number'],
           age: player['Age'],
-          contracts_attributes: [
+          contractsAttributes: [
             {
-              started_on: this.team.currently_on,
-              ended_on: player['Contract Ends'] &&
+              startedOn: this.team.currentlyOn,
+              endedOn: player['Contract Ends'] &&
                 format(player['Contract Ends'], 'yyyy-MM-dd'),
               wage: player['Wage'],
-              release_clause: player['Release Clause'],
-              signing_bonus: player['Signing Bonus'],
-              performance_bonus: player['Performance Bonus'],
-              bonus_req: player['Bonus Req'],
-              bonus_req_type: player['Bonus Req. Type']
+              releaseClause: player['Release Clause'],
+              signingBonus: player['Signing Bonus'],
+              performanceBonus: player['Performance Bonus'],
+              bonusReq: player['Bonus Req'],
+              bonusReqType: player['Bonus Req. Type']
             }
           ]
         })

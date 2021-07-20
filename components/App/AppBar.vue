@@ -1,7 +1,6 @@
 <template>
   <v-app-bar app>
     <span class="text-h5 font-weight-light">
-      <v-icon left>mdi-soccer</v-icon>
       MyFIFA Manager
     </span>
 

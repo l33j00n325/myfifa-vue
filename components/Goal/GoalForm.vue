@@ -19,7 +19,7 @@
     <template #form>
       <v-col cols="12">
         <v-radio-group
-          v-model="goal.home"
+          v-model="attributes.home"
           row
           hide-details
           @change="clearNames"
@@ -37,22 +37,22 @@
         </v-radio-group>
       </v-col>
       <v-col cols="12">
-        <minute-field v-model="minute" />
+        <minute-field v-model.number="minute" />
       </v-col>
       <v-col cols="12">
-        <player-select
+        <cap-select
           v-if="teamGoal"
-          v-model="goal.player_id"
-          :players="scorerOptions"
+          v-model="attributes.playerId"
+          :caps="scorerOptions"
           label="Goal Scorer"
           required
         />
         <v-text-field
           v-else
-          v-model="goal.player_name"
+          v-model="attributes.playerName"
           label="Goal Scorer"
           prepend-icon="mdi-account"
-          :rules="rulesFor.player_name"
+          :rules="rulesFor.playerName"
           spellcheck="false"
           autocapitalize="words"
           autocomplete="off"
@@ -60,23 +60,23 @@
         />
       </v-col>
       <v-col cols="12">
-        <player-select
+        <cap-select
           v-if="teamGoal"
-          v-model="goal.assist_id"
-          :players="assistOptions"
+          v-model="attributes.assistId"
+          :caps="assistOptions"
           label="Assisted By"
           icon="mdi-human-greeting"
-          :disabled="goal.penalty || goal.own_goal"
+          :disabled="attributes.penalty || attributes.ownGoal"
           clearable
           hide-details
         />
         <v-text-field
           v-else
-          v-model="goal.assisted_by"
+          v-model="attributes.assistedBy"
           label="Assisted By"
           prepend-icon="mdi-human-greeting"
           hide-details
-          :disabled="goal.penalty || goal.own_goal"
+          :disabled="attributes.penalty || attributes.ownGoal"
           spellcheck="false"
           autocapitalize="words"
           autocomplete="off"
@@ -85,17 +85,17 @@
       </v-col>
       <v-col cols="12">
         <v-checkbox
-          v-model="goal.penalty"
+          v-model="attributes.penalty"
           label="Penalty"
-          :disabled="goal.own_goal"
+          :disabled="attributes.ownGoal"
           hide-details
         />
       </v-col>
       <v-col cols="12">
         <v-checkbox
-          v-model="goal.own_goal"
+          v-model="attributes.ownGoal"
           label="Own Goal"
-          :disabled="goal.penalty"
+          :disabled="attributes.penalty"
           hide-details
         />
       </v-col>
@@ -120,17 +120,17 @@
       record: { type: Object, default: null }
     },
     data: () => ({
-      goal: {
+      attributes: {
         home: true,
-        player_id: null,
-        player_name: '',
-        assisted_by: '',
-        assist_id: '',
-        own_goal: false,
+        playerId: null,
+        playerName: '',
+        assistedBy: '',
+        assistId: '',
+        ownGoal: false,
         penalty: false
       },
       rulesFor: {
-        player_name: [isRequired('Goal Scorer')]
+        playerName: [isRequired('Goal Scorer')]
       }
     }),
     computed: {
@@ -139,43 +139,47 @@
       },
       scorerOptions () {
         return this.unsubbedPlayers.filter(cap =>
-          cap.player_id !== this.goal.assist_id
+          cap.playerId !== this.attributes.assistId
         )
       },
       assistOptions () {
         return this.unsubbedPlayers.filter(cap =>
-          cap.player_id !== this.goal.player_id
+          cap.playerId !== this.attributes.playerId
         )
       },
       teamGoal () {
-        return !this.goal.home ^ this.match.home === this.team.title
+        return !this.attributes.home ^ this.match.home === this.team.name
       }
     },
     watch: {
       dialog (val) {
-        if (val && this.record) {
-          this.goal = pick(this.record, [
-            'id',
-            'home',
-            'player_id',
-            'player_name',
-            'assisted_by',
-            'assist_id',
-            'own_goal',
-            'penalty'
-          ])
-          this.minute = this.record.minute
+        if (val) {
+          if (this.record) {
+            this.attributes = pick(this.record, [
+              'home',
+              'playerId',
+              'playerName',
+              'assistedBy',
+              'assistId',
+              'ownGoal',
+              'penalty'
+            ])
+            this.minute = this.record.minute
+          } else {
+            this.attributes.ownGoal = false
+            this.attributes.penalty = false
+          }
         }
       },
-      'goal.assist_id' (val) {
+      'attributes.assistId' (val) {
         if (!val && this.teamGoal) {
-          this.goal.assisted_by = ''
+          this.attributes.assistedBy = ''
         }
       },
-      'goal.penalty' (val) {
+      'attributes.penalty' (val) {
         this.clearAssistedBy(val)
       },
-      'goal.own_goal' (val) {
+      'attributes.ownGoal' (val) {
         this.clearAssistedBy(val)
       }
     },
@@ -185,30 +189,33 @@
         updateGoal: 'update'
       }),
       clearNames () {
-        this.goal.player_id = null
-        this.goal.player_name = null
-        this.goal.assist_id = null
-        this.goal.assisted_by = null
+        this.attributes.playerId = null
+        this.attributes.playerName = null
+        this.attributes.assistId = null
+        this.attributes.assistedBy = null
       },
       clearAssistedBy (val) {
         console.log(`clearAssistedBy `, val)
         if (val) {
-          this.goal.assist_id = null
-          this.goal.assisted_by = null
+          this.attributes.assistId = null
+          this.attributes.assistedBy = null
         }
       },
       async submit () {
-        const goal = {
-          ...this.goal,
+        const attributes = {
+          ...this.attributes,
           minute: this.minute
         }
 
         if (this.record) {
-          await this.updateGoal(goal)
+          await this.updateGoal({
+            id: this.record.id,
+            attributes
+          })
         } else {
           await this.createGoal({
             matchId: this.match.id,
-            goal
+            attributes
           })
         }
       }

@@ -11,7 +11,7 @@
     <template #form>
       <v-col cols="12">
         <v-text-field
-          v-model="squad.name"
+          v-model="attributes.name"
           label="Name"
           prepend-icon="mdi-clipboard-text"
           :rules="rulesFor.name"
@@ -32,6 +32,7 @@
             prepend-icon="mdi-run"
             :items="positions"
             :rules="rulesFor.pos"
+            menu-props="auto"
             hide-details
           />
         </v-col>
@@ -40,7 +41,7 @@
           cols="8"
         >
           <player-select
-            v-model="squadPlayer.player_id"
+            v-model="squadPlayer.playerId"
             :players="activePlayers"
             item-value="id"
             label="Player"
@@ -55,7 +56,6 @@
 
 <script>
   import { mapActions } from 'vuex'
-  import pick from 'lodash.pick'
   import { ActivePlayerSelectable, DialogFormable, TeamAccessible } from '@/mixins'
   import { matchPositions } from '@/constants'
   import { isRequired } from '@/functions'
@@ -72,11 +72,12 @@
     },
     data: () => ({
       valid: false,
-      loadingPlayers: false,
-      squad: {
+      key: 0,
+      attributes: {
         name: '',
-        squad_players_attributes: new Array(11).fill().map(x => ({
-          player_id: null,
+        squadPlayersAttributes: new Array(11).fill().map((_, id) => ({
+          id,
+          playerId: null,
           pos: null
         }))
       },
@@ -93,8 +94,8 @@
         return Object.keys(matchPositions)
       },
       sortedSquadPlayers () {
-        return [...this.squad.squad_players_attributes].sort((a, b) => {
-          return this.positions.indexOf(a.pos) < this.positions.indexOf(b.pos)
+        return [...this.attributes.squadPlayersAttributes].sort((a, b) => {
+          return a.pos && this.positions.indexOf(a.pos) < this.positions.indexOf(b.pos)
             ? -1
             : 1
         })
@@ -103,46 +104,34 @@
     watch: {
       dialog (val) {
         if (val && this.record) {
-          this.squad = pick(this.record, [
-            'id',
-            'name'
-          ])
-          this.squad.squad_players_attributes = this.record.squad_players
+          this.attributes.name = this.record.name
+          this.attributes.squadPlayersAttributes = this.record.squadPlayers
             .map(squadPlayer => ({
               id: squadPlayer.id,
-              player_id: squadPlayer.player_id,
+              playerId: squadPlayer.playerId,
               pos: squadPlayer.pos
             }))
-        }
-
-        if (this.activePlayers.length === 0) {
-          this.loadPlayers()
         }
       }
     },
     methods: {
-      ...mapActions({
-        fetchPlayers: 'players/fetch',
-        createSquad: 'squads/create',
-        updateSquad: 'squads/update'
+      ...mapActions('squads', {
+        createSquad: 'create',
+        updateSquad: 'update'
       }),
-      async loadPlayers () {
-        try {
-          this.loadingPlayers = true
-          await this.fetchPlayers({ teamId: this.team.id })
-        } catch (e) {
-          alert(e.message)
-        } finally {
-          this.loadingPlayers = false
-        }
-      },
       async submit () {
         if (this.record) {
-          await this.updateSquad(this.squad)
+          await this.updateSquad({
+            id: this.record.id,
+            attributes: this.attributes
+          })
         } else {
+          this.attributes.squadPlayersAttributes.forEach(attributes => {
+            delete attributes.id
+          })
           await this.createSquad({
             teamId: this.team.id,
-            squad: this.squad
+            attributes: this.attributes
           })
         }
       }

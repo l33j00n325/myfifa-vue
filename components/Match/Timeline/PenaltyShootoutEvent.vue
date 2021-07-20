@@ -5,10 +5,10 @@
     :readonly="readonly"
   >
     <div :class="{ 'font-weight-bold': match.home === winner }">
-      {{ event.home_score }} - {{ match.home }}
+      {{ event.homeScore }} - {{ match.home }}
     </div>
     <div :class="{ 'font-weight-bold': match.away === winner }">
-      {{ event.away_score }} - {{ match.away }}
+      {{ event.awayScore }} - {{ match.away }}
     </div>
   </base-match-event>
 </template>
@@ -23,7 +23,7 @@
     },
     computed: {
       winner () {
-        return this.event.home_score > this.event.away_score
+        return this.event.homeScore > this.event.awayScore
           ? this.match.home
           : this.match.away
       }

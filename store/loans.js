@@ -1,19 +1,55 @@
+import { gql } from 'nuxt-graphql-request'
+
 // actions
 export const actions = {
-  async create (_, { playerId, loan }) {
-    const data = await this.$axios.$post(`players/${playerId}/loans`, {
-      loan
-    })
-    this.$db().model('Loan').insert({ data })
+  async create (_, { playerId, attributes }) {
+    const query = gql`
+      mutation createLoan($playerId: ID!, $attributes: LoanAttributes!) {
+        addLoan(playerId: $playerId, attributes: $attributes) {
+          errors { fullMessages }
+        }
+      }
+    `
+
+    const { addLoan: { errors } } =
+      await this.$graphql.default.request(query, { playerId, attributes })
+
+    if (errors) {
+      throw new Error(errors.fullMessages[0])
+    }
   },
-  async update (_, loan) {
-    const data = await this.$axios.$patch(`loans/${loan.id}`, {
-      loan
-    })
-    this.$db().model('Loan').insert({ data })
+  async update (_, { id, attributes }) {
+    const query = gql`
+      mutation ($id: ID!, $attributes: LoanAttributes!) {
+        updateLoan(id: $id, attributes: $attributes) {
+          errors { fullMessages }
+        }
+      }
+    `
+
+    const { updateLoan: { errors } } =
+      await this.$graphql.default.request(query, { id, attributes })
+
+    if (errors) {
+      throw new Error(errors.fullMessages[0])
+    }
   },
-  async remove (_, loanId) {
-    await this.$axios.$delete(`loans/${loanId}`)
-    this.$db().model('Loan').delete(loanId)
+  async remove (_, id) {
+    const query = gql`
+      mutation removeLoan($id: ID!) {
+        removeLoan(id: $id) {
+          errors { fullMessages }
+        }
+      }
+    `
+
+    const { removeLoan: { errors } } =
+      await this.$graphql.default.request(query, { id })
+
+    if (errors) {
+      throw new Error(errors.fullMessages[0])
+    } else {
+      this.$db().model('Loan').delete(id)
+    }
   }
 }

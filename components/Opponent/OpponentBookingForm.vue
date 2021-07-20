@@ -1,22 +1,25 @@
 <template>
-  <base-form :submit="saveBooking">
+  <base-form
+    :submit="saveBooking"
+    @reset="attributes.redCard = false"
+  >
     <template #default="{ valid, loading }">
       <div class="pa-2">
         <div class="text-subtitle-2 pb-2">
           Book Player
         </div>
-        <minute-field v-model="minute" />
+        <minute-field v-model.number="minute" />
         <v-text-field
-          v-model="booking.player_name"
+          v-model="attributes.playerName"
           label="Player"
           prepend-icon="mdi-account"
-          :rules="rules.player_name"
+          :rules="rules.playerName"
           spellcheck="false"
           autocapitalize="words"
           autocomplete="off"
           autocorrect="off"
         />
-        <v-radio-group v-model="booking.red_card">
+        <v-radio-group v-model="attributes.redCard">
           <v-radio
             label="Yellow Card"
             color="orange darken-2"
@@ -36,9 +39,8 @@
             primary
             text
             :loading="loading"
-          >
-            Save
-          </v-btn>
+            v-text="'Save'"
+          />
         </div>
       </div>
     </template>
@@ -57,16 +59,16 @@
       MatchAccessible
     ],
     data: () => ({
-      booking: {
+      attributes: {
         home: true,
-        player_name: '',
-        red_card: false
+        playerName: '',
+        redCard: false
       }
     }),
     computed: {
       rules () {
         return {
-          player_name: [isRequired('Player')]
+          playerName: [isRequired('Player')]
         }
       }
     },
@@ -74,7 +76,7 @@
       'match.home': {
         immediate: true,
         handler (home) {
-          this.booking.home = home !== this.team.title
+          this.attributes.home = home !== this.team.name
         }
       }
     },
@@ -85,8 +87,8 @@
       async saveBooking () {
         await this.createBooking({
           matchId: this.match.id,
-          booking: {
-            ...this.booking,
+          attributes: {
+            ...this.attributes,
             minute: this.minute
           }
         })

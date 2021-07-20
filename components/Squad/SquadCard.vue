@@ -49,11 +49,11 @@
         </v-col>
       </v-row>
       <v-divider class="mx-3" />
-      <formation-grid :players="squad.squad_players">
+      <formation-grid :players="squad.squadPlayers">
         <template #position="{ player }">
           <v-icon>mdi-account</v-icon>
-          <div :class="['player', statusColor(player.player_id)]">
-            {{ nameOf(player.player_id) }}
+          <div :class="['player', statusColor(player.playerId)]">
+            {{ nameOf(player.playerId) }}
           </div>
         </template>
       </formation-grid>
@@ -82,9 +82,9 @@
       avgOVR (positionType) {
         let playerIds = []
 
-        this.squad.squad_players.forEach(squadPlayer => {
+        this.squad.squadPlayers.forEach(squadPlayer => {
           if (squadPlayer.positionType === positionType) {
-            playerIds.push(squadPlayer.player_id)
+            playerIds.push(squadPlayer.playerId)
           }
         })
 
